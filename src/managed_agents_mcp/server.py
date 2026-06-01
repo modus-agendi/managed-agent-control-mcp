@@ -1,0 +1,354 @@
+"""MCP server: control Claude Managed Agents.
+
+Tool tiers (see each tool's docstring — those are written as activation prompts
+for the model, not human docs):
+
+  discover   agent_list, agent_get, environment_list, environment_get
+  start      session_start
+  observe    session_get, session_list, session_events   (poll; no live stream)
+  interact   session_message, session_interrupt, session_respond
+  destructive (gated)  session_archive, session_delete
+
+The model observes a running agent by *polling* `session_events` / `session_get`,
+because MCP tool calls are request/response — there is no way to stream the
+agent's live output back into the conversation. Tools return compact JSON; large
+event payloads are truncated (page with `after_event_id`).
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from fastmcp import FastMCP
+
+from . import client, guardrails
+
+# Server-level guidance for the model. Kept well under the 2KB that clients
+# (e.g. Claude Code) truncate to, with the start→observe→interact loop first.
+_INSTRUCTIONS = """\
+Control Claude Managed Agents: start an agent, watch it work, and steer it.
+
+Typical loop:
+1. Discover — agent_list / environment_list to find an agent_* id and an env_* id
+   (or use ones the user gives you).
+2. Start — session_start(agent_id, environment_id, message=...) creates a session and
+   sends the first instruction; it returns a session_id.
+3. Observe (POLL — there is no live stream) — call session_get(session_id) for status
+   and session_events(session_id, after_event_id=...) for new output. A turn is done
+   when status is "idle". Reuse the returned last_event_id as after_event_id to fetch
+   only new events.
+4. Interact — session_message to continue, session_interrupt to stop/redirect, and
+   session_respond to approve/deny a tool the agent is waiting on (status "idle" with a
+   requires_action stop reason).
+5. End — session_archive (stop new events, keep history) or session_delete (remove).
+
+Sessions persist across turns; resume by sending another message. Token usage is on the
+session object. This server acts within one operator's Anthropic workspace.
+"""
+
+mcp: FastMCP = FastMCP("managed-agent-control", instructions=_INSTRUCTIONS)
+
+# Bounds so a single tool call can't dump an unbounded payload into the model.
+_DEFAULT_EVENT_LIMIT = 50
+_MAX_EVENT_LIMIT = 200
+_MAX_FIELD_CHARS = 6000
+
+# Reused across calls (persists in stdio; warm-reused on Lambda). Single-tenant,
+# so no per-principal client is needed yet.
+_CLIENT = client.ManagedAgentsClient()
+
+
+def _client() -> client.ManagedAgentsClient:
+    return _CLIENT
+
+
+# ---- discovery tier ----------------------------------------------------------
+
+
+@mcp.tool()
+async def agent_list(limit: int | None = None, after_id: str | None = None) -> dict:
+    """List managed agents in the workspace (lightweight summaries).
+
+    Call this to find an `agent_*` id to start a session with, unless the user
+    already gave you one. Returns id, name, model, and description per agent. Use
+    `agent_get` for full configuration. Page with `after_id` (the returned
+    `last_id`) when `has_more` is true.
+    """
+    data = await _client().agents_list(limit=limit, after_id=after_id)
+    return _list_envelope(data, _summarize_agent, "agents")
+
+
+@mcp.tool()
+async def agent_get(agent_id: str) -> dict:
+    """Get one agent's full configuration by `agent_*` id.
+
+    Use after `agent_list` to inspect an agent's model, system prompt, tools,
+    MCP servers, and skills before starting a session.
+    """
+    return _truncate(await _client().agent_get(agent_id))
+
+
+@mcp.tool()
+async def environment_list(limit: int | None = None, after_id: str | None = None) -> dict:
+    """List sandbox environments (lightweight summaries).
+
+    Starting a session needs an `env_*` id alongside an agent id. Call this to
+    find one. Returns id, name, and timestamps per environment.
+    """
+    data = await _client().environments_list(limit=limit, after_id=after_id)
+    return _list_envelope(data, _summarize_environment, "environments")
+
+
+@mcp.tool()
+async def environment_get(environment_id: str) -> dict:
+    """Get one environment's full configuration by `env_*` id (packages, networking)."""
+    return _truncate(await _client().environment_get(environment_id))
+
+
+# ---- start tier --------------------------------------------------------------
+
+
+@mcp.tool()
+async def session_start(
+    agent_id: str,
+    environment_id: str,
+    message: str | None = None,
+    vault_ids: list[str] | None = None,
+    agent_version: int | None = None,
+) -> dict:
+    """Start a managed-agent session: provision a sandbox and (optionally) kick off work.
+
+    This is the main entry point. Pass `message` to send the agent its first
+    instruction immediately; omit it to only provision the session and send work
+    later with `session_message`. Pin `agent_version` to run a specific version
+    (default: latest). `vault_ids` attach stored MCP credentials.
+
+    Returns the `session_id`. After starting, OBSERVE by polling
+    `session_get`/`session_events` until status is "idle".
+    """
+    guardrails.check_agent_allowed(agent_id)
+    guardrails.check_environment_allowed(environment_id)
+
+    session = await _client().session_create(
+        agent_id, environment_id, agent_version=agent_version, vault_ids=vault_ids
+    )
+    session_id = session.get("id", "")
+
+    message_sent = False
+    if message:
+        await _client().events_send(session_id, [_user_message(message)])
+        message_sent = True
+
+    guardrails.audit(
+        "session_start",
+        agent_id=agent_id,
+        environment_id=environment_id,
+        session_id=session_id,
+        message_sent=message_sent,
+    )
+    return {
+        "session_id": session_id,
+        "status": session.get("status"),
+        "message_sent": message_sent,
+        "next_step": (
+            "Poll session_events(session_id, after_event_id=...) and session_get(session_id) "
+            "until status is 'idle'."
+        ),
+    }
+
+
+# ---- observe tier (poll) -----------------------------------------------------
+
+
+@mcp.tool()
+async def session_get(session_id: str) -> dict:
+    """Get a session's current status and token usage.
+
+    Status is one of: idle (waiting for input — done with its turn), running
+    (working), rescheduling (retrying), terminated (ended on error). When idle
+    with a `stop_reason` of `requires_action`, the agent is waiting on a tool
+    confirmation — use `session_respond`.
+    """
+    return _truncate(await _client().session_get(session_id))
+
+
+@mcp.tool()
+async def session_list(
+    agent_id: str | None = None, limit: int | None = None, after_id: str | None = None
+) -> dict:
+    """List sessions, optionally filtered to one `agent_id`. Returns id + status each."""
+    data = await _client().sessions_list(agent_id=agent_id, limit=limit, after_id=after_id)
+    return _list_envelope(data, _summarize_session, "sessions")
+
+
+@mcp.tool()
+async def session_events(
+    session_id: str,
+    types: list[str] | None = None,
+    after_event_id: str | None = None,
+    limit: int | None = None,
+) -> dict:
+    """Read a session's events — the agent's output and activity. POLL this to observe.
+
+    Each call returns events plus `last_event_id`; pass that back as
+    `after_event_id` next time to fetch only what's new. Filter with `types` (e.g.
+    ["agent.message"] for just the agent's text, or ["agent.tool_use",
+    "agent.tool_result"] for tool activity). Large payloads are truncated.
+
+    Common types: agent.message (text), agent.thinking, agent.tool_use /
+    agent.tool_result, agent.mcp_tool_use, session.status_idle (with stop_reason).
+    """
+    capped = min(limit or _DEFAULT_EVENT_LIMIT, _MAX_EVENT_LIMIT)
+    data = await _client().events_list(
+        session_id, types=types, after_id=after_event_id, limit=capped
+    )
+    events = data.get("data", []) if isinstance(data, dict) else []
+    last_event_id = (
+        events[-1].get("id") if events and isinstance(events[-1], dict) else after_event_id
+    )
+    return {
+        "session_id": session_id,
+        "count": len(events),
+        "events": _truncate(events),
+        "last_event_id": last_event_id,
+        "has_more": data.get("has_more", False) if isinstance(data, dict) else False,
+    }
+
+
+# ---- interact tier -----------------------------------------------------------
+
+
+@mcp.tool()
+async def session_message(session_id: str, text: str) -> dict:
+    """Send a user message to the agent — start work, reply, or continue a turn.
+
+    Use to give the agent a new instruction or to resume an idle session. After
+    sending, OBSERVE by polling `session_events`.
+    """
+    await _client().events_send(session_id, [_user_message(text)])
+    guardrails.audit("session_message", session_id=session_id)
+    return {
+        "ok": True,
+        "session_id": session_id,
+        "next_step": "Poll session_events / session_get until status is 'idle'.",
+    }
+
+
+@mcp.tool()
+async def session_interrupt(session_id: str, then_message: str | None = None) -> dict:
+    """Interrupt a running agent, optionally redirecting it with a new instruction.
+
+    Sends a user.interrupt; if `then_message` is given, it follows immediately so
+    the agent stops what it's doing and takes the new direction.
+    """
+    events: list[dict[str, Any]] = [{"type": "user.interrupt"}]
+    if then_message:
+        events.append(_user_message(then_message))
+    await _client().events_send(session_id, events)
+    guardrails.audit("session_interrupt", session_id=session_id, redirected=bool(then_message))
+    return {"ok": True, "session_id": session_id, "redirected": bool(then_message)}
+
+
+@mcp.tool()
+async def session_respond(
+    session_id: str, tool_use_id: str, result: str, deny_message: str | None = None
+) -> dict:
+    """Approve or deny a tool call the agent is waiting on (a permission policy gate).
+
+    When `session_get` shows status "idle" with stop_reason `requires_action`, the
+    agent paused for confirmation. The blocking event ids are in
+    `stop_reason.event_ids`. Call this with `tool_use_id` = the blocking event id
+    and `result` = "allow" or "deny" (add `deny_message` to explain a denial).
+    """
+    if result not in {"allow", "deny"}:
+        raise ValueError('result must be "allow" or "deny"')
+    event: dict[str, Any] = {
+        "type": "user.tool_confirmation",
+        "tool_use_id": tool_use_id,
+        "result": result,
+    }
+    if deny_message and result == "deny":
+        event["deny_message"] = deny_message
+    await _client().events_send(session_id, [event])
+    guardrails.audit("session_respond", session_id=session_id, result=result)
+    return {"ok": True, "session_id": session_id, "result": result}
+
+
+# ---- destructive tier (gated) ------------------------------------------------
+
+
+@mcp.tool()
+async def session_archive(session_id: str) -> dict:
+    """Archive a session: stop accepting new events but keep its history. Reversible-ish."""
+    guardrails.check_destructive_allowed("session_archive")
+    await _client().session_archive(session_id)
+    guardrails.audit("session_archive", session_id=session_id)
+    return {"ok": True, "session_id": session_id, "archived": True}
+
+
+@mcp.tool()
+async def session_delete(session_id: str) -> dict:
+    """Permanently delete a session (history + sandbox). Cannot delete a running session."""
+    guardrails.check_destructive_allowed("session_delete")
+    await _client().session_delete(session_id)
+    guardrails.audit("session_delete", session_id=session_id)
+    return {"ok": True, "session_id": session_id, "deleted": True}
+
+
+# ---- helpers -----------------------------------------------------------------
+
+
+def _user_message(text: str) -> dict[str, Any]:
+    return {"type": "user.message", "content": [{"type": "text", "text": text}]}
+
+
+def _list_envelope(data: Any, summarize: Any, key: str) -> dict:
+    """Shape an API list response into {<key>: [summary,...], has_more, last_id}."""
+    items = data.get("data", []) if isinstance(data, dict) else []
+    return {
+        key: [summarize(i) for i in items if isinstance(i, dict)],
+        "count": len(items),
+        "has_more": data.get("has_more", False) if isinstance(data, dict) else False,
+        "last_id": data.get("last_id") if isinstance(data, dict) else None,
+    }
+
+
+def _summarize_agent(a: dict) -> dict:
+    return {
+        "id": a.get("id"),
+        "name": a.get("name"),
+        "model": a.get("model"),
+        "description": a.get("description"),
+        "created_at": a.get("created_at"),
+        "archived_at": a.get("archived_at"),
+    }
+
+
+def _summarize_environment(e: dict) -> dict:
+    return {
+        "id": e.get("id"),
+        "name": e.get("name"),
+        "created_at": e.get("created_at"),
+        "archived_at": e.get("archived_at"),
+    }
+
+
+def _summarize_session(s: dict) -> dict:
+    return {
+        "id": s.get("id"),
+        "status": s.get("status"),
+        "created_at": s.get("created_at"),
+    }
+
+
+def _truncate(value: Any, max_chars: int = _MAX_FIELD_CHARS) -> Any:
+    """Recursively truncate long strings so a tool result stays a sane size."""
+    if isinstance(value, str):
+        if len(value) > max_chars:
+            return value[:max_chars] + f"…[truncated {len(value) - max_chars} chars]"
+        return value
+    if isinstance(value, dict):
+        return {k: _truncate(v, max_chars) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_truncate(v, max_chars) for v in value]
+    return value

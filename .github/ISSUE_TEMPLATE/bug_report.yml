@@ -1,0 +1,50 @@
+name: Bug report
+description: Report a problem with the MCP server.
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the report! Please do not include secrets (API keys, tokens, JWTs).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps. Include the tool call(s) and (redacted) arguments if relevant.
+      placeholder: |
+        1. Configure MCP_AUTH_MODE=...
+        2. Call tool `session_start` with ...
+        3. See error ...
+    validations:
+      required: true
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport
+      options: [stdio, HTTP container, AWS Lambda]
+    validations:
+      required: true
+  - type: dropdown
+    id: auth-mode
+    attributes:
+      label: Auth mode (if HTTP)
+      options: ["n/a (stdio)", none, bearer, oidc, cognito]
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Package version or commit SHA.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant log output (redact secrets). This is automatically formatted as code.
+      render: shell

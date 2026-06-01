@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / discussion
+    url: https://github.com/modus-agendi/managed-agent-control-mcp/discussions
+    about: Ask a question or share an idea (not a bug report).
+  - name: Security vulnerability
+    url: https://github.com/modus-agendi/managed-agent-control-mcp/security/advisories/new
+    about: Report security issues privately — please do NOT open a public issue.

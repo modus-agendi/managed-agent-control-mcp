@@ -1,0 +1,20 @@
+title = "managed-agent-control-mcp gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholders in examples, docs, and tests are not real secrets."
+paths = [
+  '''\.env\.example''',
+  '''tests/.*''',
+  '''deploy/aws-lambda/.*\.tf''',
+  '''deploy/aws-lambda/README\.md''',
+]
+regexes = [
+  '''sk-ant-\.\.\.''',
+  '''sk-ant-test''',
+  '''REPLACE_ME''',
+  '''change-me[a-z-]*''',
+  '''s3cret''',
+]

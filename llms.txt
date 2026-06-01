@@ -1,0 +1,39 @@
+# managed-agent-control-mcp
+
+> An MCP server that exposes the Claude Managed Agents API as tools, so a user in
+> Claude.ai (or any MCP client) can start, observe, and interact with managed
+> agents running on Anthropic's platform. Python + FastMCP. Runs over stdio, a
+> generic HTTP container, or AWS Lambda. Pluggable inbound auth: static bearer,
+> generic OIDC (JWT), or an AWS Cognito preset. Single operator ANTHROPIC_API_KEY
+> (outbound). Community project; not affiliated with Anthropic.
+
+## Concepts
+
+- Two auth layers: OUTBOUND (this server → Anthropic, via ANTHROPIC_API_KEY) and
+  INBOUND (MCP client → this server, via bearer/OIDC/Cognito; HTTP only).
+- Observation is by POLLING (session_get + session_events with an after_event_id
+  cursor) — MCP tool calls are request/response; there is no live stream.
+- Read-only control plane: agent/environment definitions are managed by the
+  separate Terraform provider; this server reads them and operates sessions.
+
+## Tools
+
+- Discover: agent_list, agent_get, environment_list, environment_get
+- Start: session_start(agent_id, environment_id, message?, vault_ids?, agent_version?)
+- Observe: session_get, session_list, session_events(types?, after_event_id?, limit?)
+- Interact: session_message, session_interrupt, session_respond(tool_use_id, result)
+- Destructive (gated by MCP_ALLOW_DESTRUCTIVE): session_archive, session_delete
+
+## Docs
+
+- README: ./README.md
+- Configuration (env vars + guardrails): ./docs/configuration.md
+- Authentication (bearer/OIDC/Cognito + Claude.ai): ./docs/authentication.md
+- Deployment (local/container/Lambda): ./docs/deployment.md
+- Architecture (modules, auth layers, polling model): ./docs/architecture.md
+- Tools (full reference): ./docs/tools.md
+
+## Upstream
+
+- Managed Agents API: https://platform.claude.com/docs/en/managed-agents
+- Beta header: managed-agents-2026-04-01

@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Action versions use major tags here; Dependabot (github-actions ecosystem) keeps
+# them current and can be switched to commit-SHA pins for stricter supply-chain.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --all-extras
+      - name: Ruff lint
+        run: uv run ruff check
+      - name: Ruff format
+        run: uv run ruff format --check
+      - name: Pyright
+        run: uv run pyright
+
+  test:
+    name: Test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --frozen --all-extras
+      - name: Pytest
+        run: uv run pytest --cov=managed_agents_mcp --cov-report=term-missing

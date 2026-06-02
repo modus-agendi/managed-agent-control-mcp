@@ -52,16 +52,14 @@ async def test_full_loop_start_observe_interact_end():
         for b in e.get("content", [])
     ]
     assert "echo: hello" in texts
-    assert events["last_event_id"]
+    assert events["next_since"]
 
     status = await _call("session_get", {"session_id": sid})
     assert status["status"] == "idle"
 
-    # Continue the conversation, then fetch only new events via the cursor.
+    # Continue the conversation, then fetch only newer events via the `since` cursor.
     await _call("session_message", {"session_id": sid, "text": "again"})
-    more = await _call(
-        "session_events", {"session_id": sid, "after_event_id": events["last_event_id"]}
-    )
+    more = await _call("session_events", {"session_id": sid, "since": events["next_since"]})
     new_texts = [
         b["text"]
         for e in more["events"]
@@ -126,7 +124,7 @@ async def test_event_pagination_and_type_filter():
     assert page1["has_more"] is True
 
     page2 = await _call(
-        "session_events", {"session_id": sid, "limit": 2, "after_event_id": page1["last_event_id"]}
+        "session_events", {"session_id": sid, "limit": 2, "page": page1["next_page"]}
     )
     assert page2["count"] == 2
     assert {e["id"] for e in page1["events"]}.isdisjoint({e["id"] for e in page2["events"]})

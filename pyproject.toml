@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "managed-agent-control-mcp"
 version = "0.1.0"
-description = "MCP server to start, observe, and interact with Claude Managed Agents from Claude.ai or any MCP client."
+description = "MCP server to start, observe, and interact with Claude Managed Agents from any MCP client (Claude.ai, Claude Code, and more)."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

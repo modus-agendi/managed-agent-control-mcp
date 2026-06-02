@@ -1,6 +1,6 @@
 # managed-agent-control-mcp
 
-**Start, observe, and interact with [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents) from Claude.ai — or any MCP client.**
+**Start, observe, and interact with [Claude Managed Agents](https://platform.claude.com/docs/en/managed-agents) from any MCP client** (Claude.ai, Claude Code, Cursor, `mcp-remote`, your own agent, …).
 
 [![CI](https://github.com/modus-agendi/managed-agent-control-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/modus-agendi/managed-agent-control-mcp/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/managed-agent-control-mcp)](https://pypi.org/project/managed-agent-control-mcp/)
@@ -9,9 +9,11 @@
 
 Claude Managed Agents run on Anthropic's platform — each is an agent definition
 (model, system prompt, tools, skills) that executes inside a sandbox environment.
-This MCP server puts a **remote control** on those agents: connect it to Claude.ai
-and you can launch an agent, watch what it does, reply to it, approve the tools it
-wants to run, and stop it — all from a normal conversation. It is the runtime
+This MCP server puts a **remote control** on those agents: connect it to **any MCP
+client** and you can launch an agent, watch what it does, reply to it, approve the
+tools it wants to run, and stop it. Claude.ai is the showcase client (do it all
+from a normal conversation), but the same tools work from Claude Code, Cursor,
+`mcp-remote`, the MCP Inspector, or a custom MCP client. It is the runtime
 companion to the [Terraform provider](https://github.com/modus-agendi/terraform-provider-anthropic-claude-managed-agents)
 that *defines* agents declaratively.
 
@@ -26,8 +28,9 @@ AWS **Cognito** preset).
 ## How it works
 
 ```
-Claude.ai ──MCP──▶ managed-agent-control-mcp ──HTTPS (x-api-key)──▶ Managed Agents API
-   (you)            (this server: tools + auth)                     (agents run here)
+MCP client ──MCP──▶ managed-agent-control-mcp ──HTTPS (x-api-key)──▶ Managed Agents API
+(Claude.ai,         (this server: tools + auth)                     (agents run here)
+ Claude Code, …)
 ```
 
 You drive a loop: **discover** an agent → **start** a session → **observe** by

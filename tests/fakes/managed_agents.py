@@ -71,20 +71,18 @@ def _err(status: int, type_: str, message: str) -> JSONResponse:
 
 
 def _list_page(items: list[dict], request: Request) -> dict:
-    """Apply after_id + limit pagination over a list of {id,...} dicts."""
-    after_id = request.query_params.get("after_id")
+    """Page-token pagination, mirroring the real API: a response carries `next_page`
+    (here just the next offset as a string); the caller passes it back as `page`."""
     limit = int(request.query_params.get("limit", "100"))
-    start = 0
-    if after_id:
-        ids = [i["id"] for i in items]
-        start = ids.index(after_id) + 1 if after_id in ids else len(items)
+    if request.query_params.get("order") == "desc":
+        items = list(reversed(items))
+    page = request.query_params.get("page")
+    start = int(page) if page and page.isdigit() else 0
     window = items[start : start + limit]
-    return {
-        "data": window,
-        "has_more": start + limit < len(items),
-        "first_id": window[0]["id"] if window else None,
-        "last_id": window[-1]["id"] if window else None,
-    }
+    out: dict = {"data": window, "next_page": None}
+    if start + limit < len(items):
+        out["next_page"] = str(start + limit)
+    return out
 
 
 def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
@@ -93,7 +91,11 @@ def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
         state.seed_defaults()
 
     def _emit(session: dict, type_: str, **fields: Any) -> dict:
-        event = {"id": state.next_id("evt"), "type": type_, "processed_at": _TS, **fields}
+        eid = state.next_id("evt")
+        # Monotonically increasing, lexicographically-sortable timestamp so the
+        # `created_at[gt]` (since) filter behaves like the real API.
+        ts = f"2026-01-01T00:{state._seq // 60:02d}:{state._seq % 60:02d}Z"
+        event = {"id": eid, "type": type_, "processed_at": ts, **fields}
         session["events"].append(event)
         return event
 
@@ -232,6 +234,9 @@ def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
         types = request.query_params.getlist("types[]")
         if types:
             events = [ev for ev in events if ev["type"] in types]
+        since = request.query_params.get("created_at[gt]")
+        if since:
+            events = [ev for ev in events if (ev.get("processed_at") or "") > since]
         return JSONResponse(_list_page(events, request))
 
     app = Starlette(

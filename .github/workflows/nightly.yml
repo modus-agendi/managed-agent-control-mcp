@@ -17,7 +17,7 @@ jobs:
     # Don't run on forks (they won't have the secrets).
     if: github.repository == 'modus-agendi/managed-agent-control-mcp'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true

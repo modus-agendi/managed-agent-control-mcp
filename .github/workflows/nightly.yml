@@ -1,0 +1,33 @@
+name: Nightly (live + scenarios)
+
+# Runs the opt-in tiers that bill tokens / hit the real API, nightly and on demand.
+# Each tier self-skips if its required secrets are absent, so this is safe to enable
+# before secrets are configured.
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-and-scenarios:
+    runs-on: ubuntu-latest
+    # Don't run on forks (they won't have the secrets).
+    if: github.repository == 'modus-agendi/managed-agent-control-mcp'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --all-extras
+      - name: Live + scenario tests
+        env:
+          RUN_LIVE: "1"
+          RUN_SCENARIOS: "1"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MAC_TEST_AGENT_ID: ${{ secrets.MAC_TEST_AGENT_ID }}
+          MAC_TEST_ENVIRONMENT_ID: ${{ secrets.MAC_TEST_ENVIRONMENT_ID }}
+          SCENARIO_MODEL: ${{ vars.SCENARIO_MODEL }}
+        run: uv run pytest -m "live or scenarios" -v

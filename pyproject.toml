@@ -55,6 +55,11 @@ dev = [
     "respx>=0.21,<1",
     "asgi-lifespan>=2,<3",
 ]
+# Only the L4 scenario tier (tests/scenarios/) needs the Anthropic SDK to drive a
+# real model. Kept separate so the core has zero Anthropic-SDK dependency.
+scenarios = [
+    "anthropic>=0.40,<1",
+]
 
 [project.scripts]
 managed-agent-control-mcp = "managed_agents_mcp.__main__:main"
@@ -105,6 +110,7 @@ ignore = [
 
 [tool.pyright]
 include = ["src", "tests"]
+extraPaths = ["tests"]
 exclude = ["**/__pycache__", ".venv"]
 pythonVersion = "3.11"
 typeCheckingMode = "basic"
@@ -114,6 +120,9 @@ reportUnusedImport = true
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]
+# Put tests/ on sys.path so test-support packages (e.g. `fakes`) import cleanly
+# without making `tests` itself a package.
+pythonpath = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = [
@@ -123,6 +132,7 @@ addopts = [
 ]
 markers = [
     "live: tests that hit the real Anthropic Managed Agents API (requires ANTHROPIC_API_KEY + a test agent/environment; bills tokens)",
+    "scenarios: LLM-as-judge tests that drive a real model (requires RUN_SCENARIOS + ANTHROPIC_API_KEY; bills tokens)",
 ]
 
 [tool.coverage.run]

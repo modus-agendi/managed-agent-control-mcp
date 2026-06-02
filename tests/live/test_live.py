@@ -12,6 +12,7 @@ throwaway agent/environment. The test always deletes the session it creates.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import os
 import time
 
@@ -61,18 +62,32 @@ async def test_session_roundtrip():
                 }
             ],
         )
+        # Poll for an actual agent.message — NOT the session's initial idle, which
+        # occurs before the queued message is picked up (it goes idle → running →
+        # idle as it works).
         deadline = time.time() + 180
         got_message = False
         while time.time() < deadline:
-            current = await client.session_get(sid)
-            if current.get("status") == "idle":
-                events = await client.events_list(sid, types=["agent.message"])
-                got_message = any(e.get("type") == "agent.message" for e in events.get("data", []))
+            events = await client.events_list(sid, types=["agent.message"])
+            if any(e.get("type") == "agent.message" for e in events.get("data", [])):
+                got_message = True
                 break
-            if current.get("status") == "terminated":
+            if (await client.session_get(sid)).get("status") == "terminated":
                 pytest.fail("session terminated before responding")
             await asyncio.sleep(3)
         assert got_message, "agent produced no message before the deadline"
     finally:
-        await client.session_delete(sid)
+        await _cleanup(client, sid)
         await client.aclose()
+
+
+async def _cleanup(client: ManagedAgentsClient, session_id: str) -> None:
+    """Best-effort teardown that never masks the test result: delete the session,
+    and if it's still running, interrupt it first."""
+    with contextlib.suppress(Exception):
+        await client.session_delete(session_id)
+        return
+    with contextlib.suppress(Exception):
+        await client.events_send(session_id, [{"type": "user.interrupt"}])
+        await asyncio.sleep(3)
+        await client.session_delete(session_id)

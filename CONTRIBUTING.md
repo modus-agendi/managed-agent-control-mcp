@@ -39,14 +39,18 @@ npx @modelcontextprotocol/inspector uv run python -m managed_agents_mcp
 uv run ruff format --check
 uv run ruff check
 uv run pyright
-uv run pytest                    # unit + transport tests, no network
+uv run pytest                    # unit + transport + acceptance + security; no network
 ```
 
-The `live` test tier hits the real Managed Agents API and is opt-in:
+The opt-in tiers hit the real platform / bill tokens:
 
 ```bash
-RUN_LIVE=1 ANTHROPIC_API_KEY=sk-ant-... uv run pytest -m live
+RUN_LIVE=1 ANTHROPIC_API_KEY=sk-ant-... uv run pytest -m live          # real API
+RUN_SCENARIOS=1 ANTHROPIC_API_KEY=sk-ant-... uv run pytest -m scenarios # real model
 ```
+
+See [`docs/testing.md`](docs/testing.md) for the full test pyramid and the
+stateful fake backend.
 
 ## Pull requests
 

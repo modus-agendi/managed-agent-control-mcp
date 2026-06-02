@@ -12,7 +12,7 @@ for the model, not human docs):
 The model observes a running agent by *polling* `session_events` / `session_get`,
 because MCP tool calls are request/response — there is no way to stream the
 agent's live output back into the conversation. Tools return compact JSON; large
-event payloads are truncated (page with `after_event_id`).
+event payloads are truncated (poll newer events with `since`, page with `next_page`).
 """
 
 from __future__ import annotations
@@ -34,9 +34,9 @@ Typical loop:
 2. Start — session_start(agent_id, environment_id, message=...) creates a session and
    sends the first instruction; it returns a session_id.
 3. Observe (POLL — there is no live stream) — call session_get(session_id) for status
-   and session_events(session_id, after_event_id=...) for new output. A turn is done
-   when status is "idle". Reuse the returned last_event_id as after_event_id to fetch
-   only new events.
+   and session_events(session_id, since=...) for new output. A turn is done when status
+   is "idle". Reuse the returned next_since as the `since` argument to fetch only newer
+   events on the next poll.
 4. Interact — session_message to continue, session_interrupt to stop/redirect, and
    session_respond to approve/deny a tool the agent is waiting on (status "idle" with a
    requires_action stop reason).
@@ -66,15 +66,15 @@ def _client() -> client.ManagedAgentsClient:
 
 
 @mcp.tool()
-async def agent_list(limit: int | None = None, after_id: str | None = None) -> dict:
+async def agent_list(limit: int | None = None, page: str | None = None) -> dict:
     """List managed agents in the workspace (lightweight summaries).
 
     Call this to find an `agent_*` id to start a session with, unless the user
     already gave you one. Returns id, name, model, and description per agent. Use
-    `agent_get` for full configuration. Page with `after_id` (the returned
-    `last_id`) when `has_more` is true.
+    `agent_get` for full configuration. When `has_more` is true, pass the returned
+    `next_page` token as `page` to fetch the next page.
     """
-    data = await _client().agents_list(limit=limit, after_id=after_id)
+    data = await _client().agents_list(limit=limit, page=page)
     return _list_envelope(data, _summarize_agent, "agents")
 
 
@@ -89,13 +89,14 @@ async def agent_get(agent_id: str) -> dict:
 
 
 @mcp.tool()
-async def environment_list(limit: int | None = None, after_id: str | None = None) -> dict:
+async def environment_list(limit: int | None = None, page: str | None = None) -> dict:
     """List sandbox environments (lightweight summaries).
 
     Starting a session needs an `env_*` id alongside an agent id. Call this to
-    find one. Returns id, name, and timestamps per environment.
+    find one. Returns id, name, and timestamps per environment. Page with the
+    returned `next_page` token when `has_more` is true.
     """
-    data = await _client().environments_list(limit=limit, after_id=after_id)
+    data = await _client().environments_list(limit=limit, page=page)
     return _list_envelope(data, _summarize_environment, "environments")
 
 
@@ -151,7 +152,7 @@ async def session_start(
         "status": session.get("status"),
         "message_sent": message_sent,
         "next_step": (
-            "Poll session_events(session_id, after_event_id=...) and session_get(session_id) "
+            "Poll session_events(session_id, since=...) and session_get(session_id) "
             "until status is 'idle'."
         ),
     }
@@ -174,10 +175,19 @@ async def session_get(session_id: str) -> dict:
 
 @mcp.tool()
 async def session_list(
-    agent_id: str | None = None, limit: int | None = None, after_id: str | None = None
+    agent_id: str | None = None,
+    statuses: list[str] | None = None,
+    limit: int | None = None,
+    page: str | None = None,
 ) -> dict:
-    """List sessions, optionally filtered to one `agent_id`. Returns id + status each."""
-    data = await _client().sessions_list(agent_id=agent_id, limit=limit, after_id=after_id)
+    """List sessions, optionally filtered to one `agent_id` and/or `statuses`.
+
+    `statuses` filters by session status (e.g. ["running", "idle"]). Returns id +
+    status each; page with the returned `next_page` token when `has_more` is true.
+    """
+    data = await _client().sessions_list(
+        agent_id=agent_id, statuses=statuses, limit=limit, page=page
+    )
     return _list_envelope(data, _summarize_session, "sessions")
 
 
@@ -185,33 +195,40 @@ async def session_list(
 async def session_events(
     session_id: str,
     types: list[str] | None = None,
-    after_event_id: str | None = None,
+    since: str | None = None,
     limit: int | None = None,
+    page: str | None = None,
 ) -> dict:
     """Read a session's events — the agent's output and activity. POLL this to observe.
 
-    Each call returns events plus `last_event_id`; pass that back as
-    `after_event_id` next time to fetch only what's new. Filter with `types` (e.g.
+    To observe new output as the agent works, poll: pass the returned `next_since`
+    back as `since` on the next call to fetch only events recorded after the last
+    batch (events are returned oldest-first). Filter with `types` (e.g.
     ["agent.message"] for just the agent's text, or ["agent.tool_use",
-    "agent.tool_result"] for tool activity). Large payloads are truncated.
+    "agent.tool_result"] for tool activity). When `has_more` is true within a
+    batch, pass the returned `next_page` token as `page`. Large payloads truncated.
 
     Common types: agent.message (text), agent.thinking, agent.tool_use /
     agent.tool_result, agent.mcp_tool_use, session.status_idle (with stop_reason).
     """
     capped = min(limit or _DEFAULT_EVENT_LIMIT, _MAX_EVENT_LIMIT)
     data = await _client().events_list(
-        session_id, types=types, after_id=after_event_id, limit=capped
+        session_id, types=types, since=since, limit=capped, page=page, order="asc"
     )
     events = data.get("data", []) if isinstance(data, dict) else []
-    last_event_id = (
-        events[-1].get("id") if events and isinstance(events[-1], dict) else after_event_id
-    )
+    # next_since drives the next poll: the latest processed_at we've seen (events
+    # still queued have processed_at=null and are skipped here).
+    timestamps = [
+        str(ts) for e in events if isinstance(e, dict) and (ts := e.get("processed_at"))
+    ]
+    next_since = max(timestamps) if timestamps else since
     return {
         "session_id": session_id,
         "count": len(events),
         "events": _truncate(events),
-        "last_event_id": last_event_id,
-        "has_more": data.get("has_more", False) if isinstance(data, dict) else False,
+        "next_since": next_since,
+        "next_page": data.get("next_page") if isinstance(data, dict) else None,
+        "has_more": bool(data.get("next_page")) if isinstance(data, dict) else False,
     }
 
 
@@ -303,21 +320,26 @@ def _user_message(text: str) -> dict[str, Any]:
 
 
 def _list_envelope(data: Any, summarize: Any, key: str) -> dict:
-    """Shape an API list response into {<key>: [summary,...], has_more, last_id}."""
+    """Shape an API list response into {<key>: [summary,...], has_more, next_page}."""
     items = data.get("data", []) if isinstance(data, dict) else []
+    next_page = data.get("next_page") if isinstance(data, dict) else None
     return {
         key: [summarize(i) for i in items if isinstance(i, dict)],
         "count": len(items),
-        "has_more": data.get("has_more", False) if isinstance(data, dict) else False,
-        "last_id": data.get("last_id") if isinstance(data, dict) else None,
+        "has_more": bool(next_page),
+        "next_page": next_page,
     }
 
 
 def _summarize_agent(a: dict) -> dict:
+    # `model` may be a bare string or an object like {"model": "...", "speed": "..."}.
+    model = a.get("model")
+    if isinstance(model, dict):
+        model = model.get("model")
     return {
         "id": a.get("id"),
         "name": a.get("name"),
-        "model": a.get("model"),
+        "model": model,
         "description": a.get("description"),
         "created_at": a.get("created_at"),
         "archived_at": a.get("archived_at"),

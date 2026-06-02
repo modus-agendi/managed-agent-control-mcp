@@ -38,8 +38,9 @@ Anthropic Managed Agents API  (/v1/agents, /v1/environments, /v1/sessions, …)
 MCP tool calls are request/response. The Managed Agents API offers an SSE event
 stream, but there is no way to push that stream into an MCP client's reasoning.
 So **observation is by polling**: the model calls `session_get` for status and
-`session_events` for new output, passing the previous `last_event_id` as
-`after_event_id` to fetch only what's new. No server-side blocking waits — they
+`session_events` for new output, passing the previous `next_since` as `since` to
+fetch only newer events (pagination is page-token based via `next_page`). No
+server-side blocking waits — they
 would hit Lambda / tool timeouts. Tool descriptions and the server `instructions`
 teach the model this loop.
 

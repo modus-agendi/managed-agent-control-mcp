@@ -88,16 +88,22 @@ class ManagedAgentsClient:
 
     # ---- agents (read-only discovery) ----------------------------------------
 
-    async def agents_list(self, **page: Any) -> dict[str, Any]:
-        return await self._request("GET", "/v1/agents", params=_page_params(**page))
+    async def agents_list(
+        self, *, limit: int | None = None, page: str | None = None, order: str | None = None
+    ) -> dict[str, Any]:
+        return await self._request("GET", "/v1/agents", params=_page_params(limit, page, order))
 
     async def agent_get(self, agent_id: str) -> dict[str, Any]:
         return await self._request("GET", f"/v1/agents/{agent_id}")
 
     # ---- environments (read-only discovery) ----------------------------------
 
-    async def environments_list(self, **page: Any) -> dict[str, Any]:
-        return await self._request("GET", "/v1/environments", params=_page_params(**page))
+    async def environments_list(
+        self, *, limit: int | None = None, page: str | None = None, order: str | None = None
+    ) -> dict[str, Any]:
+        return await self._request(
+            "GET", "/v1/environments", params=_page_params(limit, page, order)
+        )
 
     async def environment_get(self, environment_id: str) -> dict[str, Any]:
         return await self._request("GET", f"/v1/environments/{environment_id}")
@@ -126,10 +132,20 @@ class ManagedAgentsClient:
     async def session_get(self, session_id: str) -> dict[str, Any]:
         return await self._request("GET", f"/v1/sessions/{session_id}")
 
-    async def sessions_list(self, agent_id: str | None = None, **page: Any) -> dict[str, Any]:
-        params = _page_params(**page)
+    async def sessions_list(
+        self,
+        agent_id: str | None = None,
+        *,
+        statuses: list[str] | None = None,
+        limit: int | None = None,
+        page: str | None = None,
+        order: str | None = None,
+    ) -> dict[str, Any]:
+        params = _page_params(limit, page, order)
         if agent_id:
             params["agent_id"] = agent_id
+        if statuses:
+            params["statuses[]"] = statuses
         return await self._request("GET", "/v1/sessions", params=params)
 
     async def session_archive(self, session_id: str) -> dict[str, Any]:
@@ -150,27 +166,36 @@ class ManagedAgentsClient:
         session_id: str,
         *,
         types: list[str] | None = None,
-        after_id: str | None = None,
+        since: str | None = None,
         limit: int | None = None,
+        page: str | None = None,
+        order: str | None = None,
     ) -> dict[str, Any]:
-        params: dict[str, Any] = _page_params(after_id=after_id, limit=limit)
+        params: dict[str, Any] = _page_params(limit, page, order)
         if types:
             # The API expects a repeated `types[]` query param (one per value).
             params["types[]"] = types
+        if since:
+            # Incremental polling: only events recorded after this timestamp.
+            params["created_at[gt]"] = since
         return await self._request("GET", f"/v1/sessions/{session_id}/events", params=params)
 
 
 def _page_params(
-    *, limit: int | None = None, after_id: str | None = None, before_id: str | None = None
+    limit: int | None = None, page: str | None = None, order: str | None = None
 ) -> dict[str, Any]:
-    """Standard Anthropic list pagination params, omitting any that are unset."""
+    """Managed Agents list pagination params, omitting any that are unset.
+
+    Pagination is page-token based: a list response returns a `next_page` token;
+    pass it back as `page` to fetch the next page. `order` is "asc" | "desc".
+    """
     params: dict[str, Any] = {}
     if limit is not None:
         params["limit"] = limit
-    if after_id:
-        params["after_id"] = after_id
-    if before_id:
-        params["before_id"] = before_id
+    if page:
+        params["page"] = page
+    if order:
+        params["order"] = order
     return params
 
 

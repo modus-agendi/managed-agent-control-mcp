@@ -7,16 +7,17 @@ IDs follow the platform's conventions: `agent_*`, `env_*`, `sesn_*`.
 
 ## Discovery (read-only)
 
-### `agent_list(limit?, after_id?)`
+### `agent_list(limit?, page?)`
 List agents as lightweight summaries (`id`, `name`, `model`, `description`,
-timestamps). Returns `{ agents, count, has_more, last_id }`. Page by passing the
-returned `last_id` as `after_id`.
+timestamps). Returns `{ agents, count, has_more, next_page }`. When `has_more` is
+true, pass the returned `next_page` token back as `page`.
 
 ### `agent_get(agent_id)`
 Full configuration for one agent (model, system prompt, tools, MCP servers, skills).
 
-### `environment_list(limit?, after_id?)`
-List sandbox environments as summaries (`id`, `name`, timestamps).
+### `environment_list(limit?, page?)`
+List sandbox environments as summaries (`id`, `name`, timestamps). Page via the
+returned `next_page` token.
 
 ### `environment_get(environment_id)`
 Full environment configuration (packages, networking policy).
@@ -36,15 +37,17 @@ Current `status` (`idle` / `running` / `rescheduling` / `terminated`) and token
 `usage`. `idle` with `stop_reason.type == "requires_action"` means the agent is
 waiting on a tool confirmation.
 
-### `session_list(agent_id?, limit?, after_id?)`
-List sessions (optionally for one agent) as `{ id, status, created_at }`.
+### `session_list(agent_id?, statuses?, limit?, page?)`
+List sessions (optionally filtered by `agent_id` and/or `statuses`) as
+`{ id, status, created_at }`. Page via the returned `next_page` token.
 
-### `session_events(session_id, types?, after_event_id?, limit?)`
-The agent's output and activity. Returns `{ events, count, last_event_id, has_more }`.
-Poll: pass the returned `last_event_id` as `after_event_id` to fetch only new
-events. Filter with `types`, e.g. `["agent.message"]` for text, or
-`["agent.tool_use", "agent.tool_result"]` for tool activity. `limit` defaults to
-50 (max 200).
+### `session_events(session_id, types?, since?, limit?, page?)`
+The agent's output and activity, oldest-first. Returns
+`{ events, count, next_since, next_page, has_more }`. Poll: pass the returned
+`next_since` back as `since` to fetch only events recorded after the last batch.
+Filter with `types`, e.g. `["agent.message"]` for text, or
+`["agent.tool_use", "agent.tool_result"]` for tool activity. Within a large batch,
+page via `next_page`. `limit` defaults to 50 (max 200).
 
 Common event types: `agent.message`, `agent.thinking`, `agent.tool_use` /
 `agent.tool_result`, `agent.mcp_tool_use` / `agent.mcp_tool_result`,
@@ -82,9 +85,9 @@ agent_list()                       → pick agent_123
 environment_list()                 → pick env_abc
 session_start(agent_123, env_abc, message="Summarize the repo README")
    → { session_id: sesn_9, ... }
-session_events(sesn_9)             → read agent.message events; note last_event_id
+session_events(sesn_9)             → read agent.message events; note next_since
 session_get(sesn_9)                → status: idle  (turn complete)
 session_message(sesn_9, "Now open a PR with the summary")
-session_events(sesn_9, after_event_id=<last>)   → poll for new output
+session_events(sesn_9, since=<next_since>)      → poll for new output
 session_delete(sesn_9)             → clean up
 ```

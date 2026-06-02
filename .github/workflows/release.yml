@@ -1,31 +1,79 @@
 name: Release
 
-# Tag a SemVer release to publish: `git tag v0.1.0 && git push origin v0.1.0`.
+# Two ways to run:
+#   - Real release: tag a SemVer version → publishes to PyPI + pushes a GHCR image.
+#       git tag v0.1.0 && git push origin v0.1.0
+#   - Dry run: Actions → Release → "Run workflow" (or `gh workflow run release.yml`),
+#       target=testpypi → publishes the current build to TestPyPI only.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Publish target (dispatch only)"
+        type: choice
+        options: [testpypi, pypi]
+        default: testpypi
 
 permissions:
   contents: read
 
 jobs:
-  pypi:
-    name: Publish to PyPI
+  build:
+    name: Build distributions
     runs-on: ubuntu-latest
-    # Trusted Publishing (OIDC) — configure this repo + environment as a publisher
-    # on PyPI. No API token needed.
-    environment: pypi
-    permissions:
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - name: Build sdist + wheel
         run: uv build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    name: Publish to TestPyPI (dry run)
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+    runs-on: ubuntu-latest
+    # Trusted Publishing (OIDC) — register this repo + the `testpypi` environment
+    # as a pending publisher on https://test.pypi.org. No API token needed.
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
+    name: Publish to PyPI
+    needs: build
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.target == 'pypi')
+    runs-on: ubuntu-latest
+    # Trusted Publishing (OIDC) — register this repo + the `pypi` environment as a
+    # pending publisher on https://pypi.org. No API token needed.
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
 
   docker:
     name: Publish container image (GHCR)
+    needs: build
+    # Only on a real version tag — dry runs don't push images.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read

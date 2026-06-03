@@ -27,27 +27,31 @@ from . import client, guardrails
 # Server-level guidance for the model. Kept well under the 2KB that clients
 # (e.g. Claude Code) truncate to, with the start→observe→interact loop first.
 _INSTRUCTIONS = """\
-Control Claude Managed Agents: start an agent, watch it work, and steer it.
+Control Claude Managed Agents: start an agent with the RIGHT resources, watch it work,
+and steer it.
 
-Typical loop:
-1. Discover — agent_list / environment_list to find an agent_* id and an env_* id
-   (or use ones the user gives you). If the agent uses MCP tools that need stored
-   credentials, also vault_list to find its vlt_* vault.
-2. Start — session_start(agent_id, environment_id, message=..., vault_ids=[…],
-   memory_store_ids=[…]) creates a session and sends the first instruction; returns a
-   session_id. Attach vault_ids (else MCP servers needing auth fail) and
-   memory_store_ids (persistent memory) for a full run.
-3. Observe (POLL — there is no live stream) — call session_get(session_id) for status
-   and session_events(session_id, since=...) for new output. A turn is done when status
-   is "idle". Reuse the returned next_since as the `since` argument to fetch only newer
-   events on the next poll.
-4. Interact — session_message to continue, session_interrupt to stop/redirect, and
-   session_respond to approve/deny a tool the agent is waiting on (status "idle" with a
-   requires_action stop reason).
-5. End — session_archive (stop new events, keep history) or session_delete (remove).
+CRITICAL — assemble the agent's resources before starting. An agent only works correctly
+with the environment, vault(s), and memory store(s) that belong to it. Starting bare, or
+with the wrong ones, causes failed tool authentication, missing memory, and bad results.
+So before session_start:
+1. agent_get(agent_id) — read its description, metadata, tools, mcp_servers, skills to
+   learn what it needs.
+2. environment_list / vault_list / memory_store_list — select the resources that BELONG
+   to THIS agent by matching each resource's name / description / metadata to the agent
+   (resources are commonly tagged metadata.agent_name=<agent> or named "<agent>-vault" /
+   "<agent>-memory"). *_get to read full details when unsure; if still ambiguous, ask the
+   user — do not guess or grab the first one.
+3. session_start(agent_id, environment_id, message=..., vault_ids=[…], memory_store_ids=[…])
+   — attach everything the agent needs.
 
-Sessions persist across turns; resume by sending another message. Token usage is on the
-session object. This server acts within one operator's Anthropic workspace.
+Then:
+- Observe (POLL — no live stream): session_get for status, session_events(since=…) for new
+  output; reuse next_since. A turn is done when status is "idle".
+- Interact: session_message (continue), session_interrupt (stop/redirect), session_respond
+  (approve/deny a tool when idle with a requires_action stop reason).
+- End: session_archive (keep history) or session_delete.
+
+Sessions persist across turns. This server acts within one operator's Anthropic workspace.
 """
 
 mcp: FastMCP = FastMCP("managed-agent-control", instructions=_INSTRUCTIONS)
@@ -71,12 +75,12 @@ def _client() -> client.ManagedAgentsClient:
 
 @mcp.tool()
 async def agent_list(limit: int | None = None, page: str | None = None) -> dict:
-    """List managed agents in the workspace (lightweight summaries).
+    """List managed agents (summaries: id, name, model, description, metadata).
 
-    Call this to find an `agent_*` id to start a session with, unless the user
-    already gave you one. Returns id, name, model, and description per agent. Use
-    `agent_get` for full configuration. When `has_more` is true, pass the returned
-    `next_page` token as `page` to fetch the next page.
+    Find an `agent_*` to run (unless the user gave one). Read each agent's
+    name/description/metadata to understand what it does — that determines which
+    environment, vault(s), and memory store(s) it needs. Use `agent_get` for full
+    config before starting. Page via the returned `next_page` token.
     """
     data = await _client().agents_list(limit=limit, page=page)
     return _list_envelope(data, _summarize_agent, "agents")
@@ -86,19 +90,23 @@ async def agent_list(limit: int | None = None, page: str | None = None) -> dict:
 async def agent_get(agent_id: str) -> dict:
     """Get one agent's full configuration by `agent_*` id.
 
-    Use after `agent_list` to inspect an agent's model, system prompt, tools,
-    MCP servers, and skills before starting a session.
+    Read this BEFORE starting a session: the agent's description, metadata, model,
+    system prompt, tools, mcp_servers, and skills tell you what it does — and
+    therefore which environment, vault(s), and memory store(s) you must attach at
+    `session_start` for it to work. Then match those against environment_list /
+    vault_list / memory_store_list.
     """
     return _truncate(await _client().agent_get(agent_id))
 
 
 @mcp.tool()
 async def environment_list(limit: int | None = None, page: str | None = None) -> dict:
-    """List sandbox environments (lightweight summaries).
+    """List sandbox environments (summaries: id, name, description, metadata).
 
-    Starting a session needs an `env_*` id alongside an agent id. Call this to
-    find one. Returns id, name, and timestamps per environment. Page with the
-    returned `next_page` token when `has_more` is true.
+    Starting a session needs an `env_*`. Don't just grab the first — pick the
+    environment that fits THIS agent by matching its name/description/metadata to
+    the agent (e.g. metadata.agent_name, or a shared naming convention). The wrong
+    environment gives the agent the wrong tools/packages. Page via `next_page`.
     """
     data = await _client().environments_list(limit=limit, page=page)
     return _list_envelope(data, _summarize_environment, "environments")
@@ -112,12 +120,13 @@ async def environment_get(environment_id: str) -> dict:
 
 @mcp.tool()
 async def vault_list(limit: int | None = None, page: str | None = None) -> dict:
-    """List credential vaults (lightweight summaries).
+    """List credential vaults (summaries: id, display_name, metadata).
 
-    An agent whose tools/MCP servers need stored credentials must have a `vlt_*`
-    vault attached when you start its session (`session_start(..., vault_ids=[…])`),
-    or those MCP servers fail to authenticate. Call this to find the right vault —
-    the `display_name`/`metadata` usually identify which agent it belongs to.
+    An agent whose MCP servers need auth must start with the `vlt_*` vault that
+    BELONGS to it (`session_start(vault_ids=[…])`), or those servers fail to connect.
+    Identify the right vault by matching its display_name/metadata to the agent —
+    commonly `metadata.agent_name=<agent>` or a name like "<agent>-vault". Attaching
+    the wrong vault, or none, breaks the agent's tools. Page via `next_page`.
     """
     data = await _client().vaults_list(limit=limit, page=page)
     return _list_envelope(data, _summarize_vault, "vaults")
@@ -135,11 +144,13 @@ async def vault_get(vault_id: str) -> dict:
 
 @mcp.tool()
 async def memory_store_list(limit: int | None = None, page: str | None = None) -> dict:
-    """List memory stores (lightweight summaries: id, name, description).
+    """List memory stores (summaries: id, name, description, metadata).
 
-    Memory stores are `memstore_*` collections of text the agent mounts as a
-    directory for persistent, cross-session memory. Use this to find one (the
-    `name`/`description` identify its purpose). Page via the returned `next_page`.
+    `memstore_*` stores are the agent's persistent memory, mounted as a directory.
+    Attach the store that BELONGS to THIS agent at `session_start(memory_store_ids=[…])`
+    — match its name/description/metadata to the agent (commonly
+    `metadata.agent_name=<agent>` or a name like "<agent>-memory"). The wrong store, or
+    none, means the agent loses its history/context. Page via `next_page`.
     """
     data = await _client().memory_stores_list(limit=limit, page=page)
     return _list_envelope(data, _summarize_memory_store, "memory_stores")
@@ -163,17 +174,25 @@ async def session_start(
     memory_store_ids: list[str] | None = None,
     agent_version: int | None = None,
 ) -> dict:
-    """Start a managed-agent session: provision a sandbox and (optionally) kick off work.
+    """Start a managed-agent session — with the RIGHT resources attached for THIS agent.
 
-    This is the main entry point. Pass `message` to send the agent its first
-    instruction immediately; omit it to only provision the session and send work
-    later with `session_message`. Pin `agent_version` to run a specific version
-    (default: latest).
+    Do NOT start bare or with mismatched resources. An agent only behaves well when its
+    OWN environment, vault(s), and memory store(s) are attached; the wrong or missing
+    ones cause failed tool authentication, lost memory/context, and bad outcomes.
 
-    Attach the agent's stored resources so it can do real work:
-      - `vault_ids` — `vlt_*` credential vaults (else MCP servers needing auth fail);
+    Before calling, assemble the resources for this agent:
+      1. `agent_get(agent_id)` — read its description, metadata, mcp_servers, skills.
+      2. Choose `environment_id` + `vault_ids` + `memory_store_ids` that BELONG to this
+         agent by matching each resource's name/description/metadata (often
+         `metadata.agent_name=<agent>`, or "<agent>-vault" / "<agent>-memory"). Use
+         environment_list / vault_list / memory_store_list (and *_get when unsure). If you
+         can't confidently match a resource, ask the user — don't guess or skip it.
+
+    Then:
+      - `vault_ids` — `vlt_*` credential vaults (else MCP servers needing auth fail).
       - `memory_store_ids` — `memstore_*` persistent memory mounted in the sandbox.
-    Use `vault_list` / `memory_store_list` to find them.
+      - `message` — sent as the first instruction now (omit to only provision).
+      - `agent_version` — pin a version (default: latest).
 
     Returns the `session_id`. After starting, OBSERVE by polling
     `session_get`/`session_events` until status is "idle".

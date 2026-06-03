@@ -5,11 +5,19 @@ import pytest
 from managed_agents_mcp import guardrails
 
 
-def test_agent_allowlist_empty_allows_all():
+def test_agent_allowlist_off_by_default_allows_all():
     guardrails.check_agent_allowed("agent_anything")  # no raise
 
 
-def test_agent_allowlist_enforced(monkeypatch: pytest.MonkeyPatch):
+def test_agent_allowlist_ignored_unless_active(monkeypatch: pytest.MonkeyPatch):
+    # A list is set, but the allowlist is NOT active → every agent still allowed.
+    monkeypatch.setenv("MCP_ALLOWED_AGENT_IDS", "agent_ok")
+    guardrails.reset_cache()
+    guardrails.check_agent_allowed("agent_not_listed")  # no raise
+
+
+def test_agent_allowlist_enforced_when_active(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("MCP_ALLOWLIST_AGENTS_ACTIVE", "true")
     monkeypatch.setenv("MCP_ALLOWED_AGENT_IDS", "agent_ok, agent_also")
     guardrails.reset_cache()
     guardrails.check_agent_allowed("agent_ok")  # no raise

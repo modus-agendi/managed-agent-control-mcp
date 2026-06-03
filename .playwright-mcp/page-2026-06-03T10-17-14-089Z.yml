@@ -1,0 +1,226 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "Skip to main content" [ref=e5] [cursor=pointer]:
+        - /url: "#main-_R_6bqmcnmlb_"
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - heading "Main" [level=1] [ref=e8]
+          - button "Show suggestions" [ref=e13] [cursor=pointer]:
+            - generic [ref=e14]: Staging
+            - generic [ref=e15]:
+              - img [ref=e16]
+              - generic [ref=e18]: Staging
+            - img [ref=e19]
+        - generic [ref=e21]:
+          - button "Search ⌘K" [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+            - text: Search
+            - generic [ref=e25]: ⌘K
+          - generic [ref=e26]:
+            - button "Help" [ref=e27] [cursor=pointer]:
+              - img [ref=e28]
+              - text: Help & Feedback
+            - link "Docs" [ref=e30] [cursor=pointer]:
+              - /url: https://workos.com/docs
+              - generic [ref=e31]:
+                - img [ref=e32]
+                - text: Docs
+          - generic [ref=e34]:
+            - button [ref=e35] [cursor=pointer]:
+              - img [ref=e36]
+            - button "Your profile" [ref=e38] [cursor=pointer]:
+              - generic [ref=e40]: A
+      - navigation "app" [ref=e41]:
+        - generic [ref=e42]:
+          - link "Overview" [ref=e46] [cursor=pointer]:
+            - /url: /get-started
+            - img [ref=e47]
+          - button [ref=e55] [cursor=pointer]:
+            - img [ref=e57]
+        - generic [ref=e60]:
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - link "Overview" [ref=e67] [cursor=pointer]:
+                - /url: /get-started
+                - generic [ref=e68]:
+                  - img [ref=e70]
+                  - generic [ref=e72]: Overview
+              - link "Organizations" [ref=e73] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/organizations
+                - generic [ref=e74]:
+                  - img [ref=e76]
+                  - generic [ref=e78]: Organizations
+              - link "Users" [ref=e79] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/users
+                - generic [ref=e80]:
+                  - img [ref=e82]
+                  - generic [ref=e84]: Users
+              - link "Applications" [ref=e85] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/applications
+                - generic [ref=e86]:
+                  - img [ref=e88]
+                  - generic [ref=e90]: Applications
+            - generic [ref=e92]: Products
+            - generic [ref=e94]:
+              - link "Authentication" [ref=e95] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication
+                - generic [ref=e96]:
+                  - img [ref=e98]
+                  - generic [ref=e100]: Authentication
+              - link "Authorization" [ref=e101] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authorization
+                - generic [ref=e102]:
+                  - img [ref=e104]
+                  - generic [ref=e106]: Authorization
+              - link "Radar" [ref=e107] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/radar
+                - generic [ref=e108]:
+                  - img [ref=e110]
+                  - generic [ref=e112]: Radar
+              - link "Audit Logs" [ref=e113] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/audit-logs
+                - generic [ref=e114]:
+                  - img [ref=e116]
+                  - generic [ref=e118]: Audit Logs
+              - link "Feature Flags" [ref=e119] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/flags
+                - generic [ref=e120]:
+                  - img [ref=e122]
+                  - generic [ref=e125]: Feature Flags
+              - link "Pipes" [ref=e126] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/pipes
+                - generic [ref=e127]:
+                  - img [ref=e129]
+                  - generic [ref=e131]: Pipes
+              - link "Connect" [ref=e132] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/connect
+                - generic [ref=e133]:
+                  - img [ref=e135]
+                  - generic [ref=e137]: Connect
+              - link "Vault" [ref=e138] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/vault
+                - generic [ref=e139]:
+                  - img [ref=e141]
+                  - generic [ref=e143]: Vault
+            - generic [ref=e145]: Developer
+            - generic [ref=e147]:
+              - link "Domains" [ref=e148] [cursor=pointer]:
+                - /url: /domains
+                - generic [ref=e149]:
+                  - img [ref=e151]
+                  - generic [ref=e153]: Domains
+              - link "Redirects" [ref=e154] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/redirects
+                - generic [ref=e155]:
+                  - img [ref=e157]
+                  - generic [ref=e159]: Redirects
+              - link "API Keys" [ref=e160] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/api-keys
+                - generic [ref=e161]:
+                  - img [ref=e163]
+                  - generic [ref=e165]: API Keys
+              - link "IdP Attributes" [ref=e166] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/identity-provider-attributes
+                - generic [ref=e167]:
+                  - img [ref=e169]
+                  - generic [ref=e171]: IdP Attributes
+              - link "Branding" [ref=e172] [cursor=pointer]:
+                - /url: /branding
+                - generic [ref=e173]:
+                  - img [ref=e175]
+                  - generic [ref=e177]: Branding
+              - link "Emails" [ref=e178] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/emails/events
+                - generic [ref=e179]:
+                  - img [ref=e181]
+                  - generic [ref=e183]: Emails
+              - link "Events" [ref=e184] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/events
+                - generic [ref=e185]:
+                  - img [ref=e187]
+                  - generic [ref=e189]: Events
+              - link "Actions" [ref=e190] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/actions/logs
+                - generic [ref=e191]:
+                  - img [ref=e193]
+                  - generic [ref=e195]: Actions
+              - link "Webhooks" [ref=e196] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/webhooks
+                - generic [ref=e197]:
+                  - img [ref=e199]
+                  - generic [ref=e201]: Webhooks
+              - link "Test SSO" [ref=e202] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/test-sso
+                - generic [ref=e203]:
+                  - img [ref=e205]
+                  - generic [ref=e207]: Test SSO
+          - generic [ref=e210]:
+            - link "Notifications" [ref=e211] [cursor=pointer]:
+              - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/notifications
+              - generic [ref=e212]:
+                - img [ref=e214]
+                - generic [ref=e217]: Notifications
+            - link "Settings" [ref=e218] [cursor=pointer]:
+              - /url: /settings/team
+              - generic [ref=e219]:
+                - img [ref=e221]
+                - generic [ref=e223]: Settings
+      - navigation "Connect" [ref=e224]:
+        - generic [ref=e227]:
+          - heading "Connect" [level=2] [ref=e229]
+          - list [ref=e232]:
+            - listitem [ref=e233]:
+              - link "Applications" [ref=e234] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/connect
+                - generic [ref=e236]: Applications
+            - listitem [ref=e237]:
+              - link "Configuration" [ref=e238] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/connect/configuration
+                - generic [ref=e240]: Configuration
+      - main [ref=e243]:
+        - generic [ref=e244]:
+          - heading "Configuration" [level=2] [ref=e247]
+          - generic [ref=e248]:
+            - generic [ref=e249]:
+              - heading "MCP Auth" [level=3] [ref=e250]
+              - paragraph [ref=e251]: Allow MCP clients to authenticate using Dynamic Client Registration (DCR) or Client ID Metadata Document (CIMD).
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - term [ref=e254]: ‍ Dynamic Client Registration
+                  - definition [ref=e255]:
+                    - text: ‍
+                    - generic [ref=e257]:
+                      - img [ref=e258]
+                      - generic [ref=e260]: Disabled
+                - generic [ref=e261]:
+                  - term [ref=e262]: ‍ Client ID Metadata Document
+                  - definition [ref=e263]:
+                    - text: ‍
+                    - generic [ref=e265]:
+                      - img [ref=e266]
+                      - generic [ref=e268]: Disabled
+              - button "Enable" [ref=e269] [cursor=pointer]
+            - generic [ref=e270]:
+              - heading "MCP resource indicators" [level=3] [ref=e271]
+              - paragraph [ref=e272]: Define valid resource indicators (URIs) for your MCP servers.
+              - generic [ref=e274]:
+                - term [ref=e275]: ‍ Resource indicator
+                - definition [ref=e276]:
+                  - text: ‍
+                  - generic [ref=e277]: Not configured
+              - button "Edit MCP resources" [ref=e278] [cursor=pointer]
+            - generic [ref=e279]:
+              - heading "External Sign-in URI" [level=3] [ref=e280]
+              - paragraph [ref=e281]: An endpoint at your app that handles fully authenticating the user before redirecting back to AuthKit.
+              - generic [ref=e283]:
+                - term [ref=e284]: ‍ External Sign-in URI
+                - definition [ref=e285]:
+                  - text: ‍
+                  - generic [ref=e286]: Not configured
+              - button "Edit external sign-in URI" [ref=e287] [cursor=pointer]
+    - region "Notifications (F8)":
+      - list
+    - region "Notifications (F8)":
+      - list
+  - alert [ref=e288]

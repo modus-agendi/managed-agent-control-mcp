@@ -178,6 +178,7 @@ async def test_rate_limit_error_surfaces():
 
 
 async def test_guardrail_blocks_disallowed_agent(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("MCP_ALLOWLIST_AGENTS_ACTIVE", "true")
     monkeypatch.setenv("MCP_ALLOWED_AGENT_IDS", "agent_other")
     guardrails.reset_cache()
     with pytest.raises(Exception) as exc:

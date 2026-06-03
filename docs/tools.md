@@ -22,6 +22,14 @@ returned `next_page` token.
 ### `environment_get(environment_id)`
 Full environment configuration (packages, networking policy).
 
+### `vault_list(limit?, page?)`
+List credential vaults as summaries (`id`, `display_name`, `metadata`, timestamps).
+Find the `vlt_*` to attach via `session_start(vault_ids=…)` for agents whose
+MCP servers need stored credentials. Page via the returned `next_page` token.
+
+### `vault_get(vault_id)`
+One vault's metadata by `vlt_*` id. Secret values are never returned.
+
 ## Start
 
 ### `session_start(agent_id, environment_id, message?, vault_ids?, agent_version?)`

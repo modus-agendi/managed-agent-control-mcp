@@ -19,7 +19,7 @@
 
 ## Tools
 
-- Discover: agent_list, agent_get, environment_list, environment_get
+- Discover: agent_list, agent_get, environment_list, environment_get, vault_list, vault_get
 - Start: session_start(agent_id, environment_id, message?, vault_ids?, agent_version?)
 - Observe: session_get, session_list, session_events(types?, since?, limit?, page?)
 - Interact: session_message, session_interrupt, session_respond(tool_use_id, result)

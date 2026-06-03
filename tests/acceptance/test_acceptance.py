@@ -36,6 +36,26 @@ async def test_discovery_lists_seeded_resources():
     assert any(e["id"] == "env_demo" for e in envs["environments"])
 
 
+async def test_vault_discovery():
+    vaults = await _call("vault_list")
+    assert any(v["id"] == "vlt_demo" for v in vaults["vaults"])
+    one = await _call("vault_get", {"vault_id": "vlt_demo"})
+    assert one["display_name"] == "demo-vault"
+
+
+async def test_session_start_attaches_vaults(fake_state):
+    started = await _call(
+        "session_start",
+        {
+            "agent_id": "agent_demo",
+            "environment_id": "env_demo",
+            "message": "hi",
+            "vault_ids": ["vlt_demo"],
+        },
+    )
+    assert fake_state.sessions[started["session_id"]]["vault_ids"] == ["vlt_demo"]
+
+
 async def test_full_loop_start_observe_interact_end():
     started = await _call(
         "session_start",

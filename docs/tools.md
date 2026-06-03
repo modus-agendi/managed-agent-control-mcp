@@ -40,10 +40,11 @@ One memory store's details by `memstore_*` id (name, description, timestamps).
 
 ## Start
 
-### `session_start(agent_id, environment_id, message?, vault_ids?, agent_version?)`
+### `session_start(agent_id, environment_id, message?, vault_ids?, memory_store_ids?, agent_version?)`
 Create a session (provision the sandbox) and, if `message` is given, send it as
 the first `user.message`. `agent_version` pins a version (default: latest).
-`vault_ids` attach stored MCP credentials. Returns
+`vault_ids` attach stored MCP credentials (`vlt_*`); `memory_store_ids` attach
+persistent memory (`memstore_*`, mounted in the sandbox). Returns
 `{ session_id, status, message_sent, next_step }`.
 
 ## Observe (poll)

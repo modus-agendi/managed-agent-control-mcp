@@ -33,9 +33,10 @@ Typical loop:
 1. Discover — agent_list / environment_list to find an agent_* id and an env_* id
    (or use ones the user gives you). If the agent uses MCP tools that need stored
    credentials, also vault_list to find its vlt_* vault.
-2. Start — session_start(agent_id, environment_id, message=..., vault_ids=[…]) creates
-   a session and sends the first instruction; it returns a session_id. Attach
-   vault_ids for any agent whose MCP servers require auth, or they fail to connect.
+2. Start — session_start(agent_id, environment_id, message=..., vault_ids=[…],
+   memory_store_ids=[…]) creates a session and sends the first instruction; returns a
+   session_id. Attach vault_ids (else MCP servers needing auth fail) and
+   memory_store_ids (persistent memory) for a full run.
 3. Observe (POLL — there is no live stream) — call session_get(session_id) for status
    and session_events(session_id, since=...) for new output. A turn is done when status
    is "idle". Reuse the returned next_since as the `since` argument to fetch only newer
@@ -159,6 +160,7 @@ async def session_start(
     environment_id: str,
     message: str | None = None,
     vault_ids: list[str] | None = None,
+    memory_store_ids: list[str] | None = None,
     agent_version: int | None = None,
 ) -> dict:
     """Start a managed-agent session: provision a sandbox and (optionally) kick off work.
@@ -166,7 +168,12 @@ async def session_start(
     This is the main entry point. Pass `message` to send the agent its first
     instruction immediately; omit it to only provision the session and send work
     later with `session_message`. Pin `agent_version` to run a specific version
-    (default: latest). `vault_ids` attach stored MCP credentials.
+    (default: latest).
+
+    Attach the agent's stored resources so it can do real work:
+      - `vault_ids` — `vlt_*` credential vaults (else MCP servers needing auth fail);
+      - `memory_store_ids` — `memstore_*` persistent memory mounted in the sandbox.
+    Use `vault_list` / `memory_store_list` to find them.
 
     Returns the `session_id`. After starting, OBSERVE by polling
     `session_get`/`session_events` until status is "idle".
@@ -175,7 +182,11 @@ async def session_start(
     guardrails.check_environment_allowed(environment_id)
 
     session = await _client().session_create(
-        agent_id, environment_id, agent_version=agent_version, vault_ids=vault_ids
+        agent_id,
+        environment_id,
+        agent_version=agent_version,
+        vault_ids=vault_ids,
+        memory_store_ids=memory_store_ids,
     )
     session_id = session.get("id", "")
 
@@ -383,6 +394,7 @@ def _summarize_agent(a: dict) -> dict:
         "name": a.get("name"),
         "model": model,
         "description": a.get("description"),
+        "metadata": a.get("metadata"),
         "created_at": a.get("created_at"),
         "archived_at": a.get("archived_at"),
     }
@@ -392,6 +404,8 @@ def _summarize_environment(e: dict) -> dict:
     return {
         "id": e.get("id"),
         "name": e.get("name"),
+        "description": e.get("description"),
+        "metadata": e.get("metadata"),
         "created_at": e.get("created_at"),
         "archived_at": e.get("archived_at"),
     }
@@ -412,6 +426,7 @@ def _summarize_memory_store(m: dict) -> dict:
         "id": m.get("id"),
         "name": m.get("name"),
         "description": m.get("description"),
+        "metadata": m.get("metadata"),
         "created_at": m.get("created_at"),
         "archived_at": m.get("archived_at"),
     }

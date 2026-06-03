@@ -9,25 +9,22 @@ permissions:
   contents: read
 
 jobs:
-  secret-scan:
-    name: Secret scan (gitleaks)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
-        env:
-          GITLEAKS_CONFIG: .gitleaks.toml
-
   dependency-review:
     name: Dependency review
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    # dependency-review-action only works on public repos (or with GitHub Advanced
+    # Security). Gated so it stays green while the repo is private and activates
+    # automatically once it goes public.
+    if: github.event_name == 'pull_request' && github.event.repository.visibility == 'public'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/dependency-review-action@v4
 
-  # Note: static security analysis (bandit's checks) runs in CI via Ruff's "S"
-  # (flake8-bandit) ruleset — see [tool.ruff.lint] in pyproject.toml — so it is
-  # not duplicated here.
+  # Secret scanning: the gitleaks GitHub Action requires a paid license for
+  # organization-owned repos, so it is not run in CI here. Secrets are kept out
+  # of the repo via `.gitleaks.toml` + a local pre-commit hook, and GitHub's
+  # native secret scanning / push protection can be enabled in repo settings.
+  # When the repo is public, gitleaks-action is free and can be re-added.
+  #
+  # Static security analysis (bandit's checks) runs in CI via Ruff's "S"
+  # (flake8-bandit) ruleset — see [tool.ruff.lint] in pyproject.toml.

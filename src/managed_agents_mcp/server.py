@@ -218,9 +218,7 @@ async def session_events(
     events = data.get("data", []) if isinstance(data, dict) else []
     # next_since drives the next poll: the latest processed_at we've seen (events
     # still queued have processed_at=null and are skipped here).
-    timestamps = [
-        str(ts) for e in events if isinstance(e, dict) and (ts := e.get("processed_at"))
-    ]
+    timestamps = [str(ts) for e in events if isinstance(e, dict) and (ts := e.get("processed_at"))]
     next_since = max(timestamps) if timestamps else since
     return {
         "session_id": session_id,

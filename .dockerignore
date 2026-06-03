@@ -1,0 +1,29 @@
+# Keep the Docker build context small (the image only needs pyproject + src +
+# README + LICENSE; the Dockerfile COPYs those explicitly). Everything here is
+# excluded from what's uploaded to the builder.
+.git
+.github
+.venv
+venv
+dist
+build
+*.egg-info
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.pyright
+htmlcov
+.coverage
+.coverage.*
+coverage.xml
+.playwright-mcp
+.env
+.env.*
+tests
+docs
+examples
+deploy/aws-lambda
+.claude
+.DS_Store

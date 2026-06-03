@@ -30,6 +30,8 @@ EXPECTED_TOOLS = {
     "environment_get",
     "vault_list",
     "vault_get",
+    "memory_store_list",
+    "memory_store_get",
     "session_start",
     "session_get",
     "session_list",

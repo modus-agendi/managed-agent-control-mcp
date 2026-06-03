@@ -1,0 +1,27 @@
+# Fly.io config for the "WorkOS AuthKit OAuth" example.
+#
+# Deploy from the REPOSITORY ROOT so the build context + Dockerfile path resolve:
+#   fly deploy --config examples/fly-io-workos-oauth/fly.toml
+#
+# All app config (Anthropic key, OIDC settings) is supplied at runtime via
+# `fly secrets set` — see this folder's README — so nothing deployment-specific
+# is committed here except your app name.
+
+app = "fib-mcp"          # CHANGE ME: must be globally unique across Fly
+primary_region = "fra"   # CHANGE ME: a region near you (`fly platform regions`)
+
+[build]
+  # The generic container from the repo (vendor-neutral); path is relative to the
+  # repo root, which is the build context when you run the command above.
+  dockerfile = "deploy/Dockerfile"
+
+[http_service]
+  internal_port = 8000     # the server listens on 8000 (uvicorn, see Dockerfile)
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0  # scale to zero when idle; first request cold-starts
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

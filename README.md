@@ -134,6 +134,7 @@ Details: [`docs/deployment.md`](docs/deployment.md).
 - [Deployment](docs/deployment.md) — local, container, Lambda
 - [Architecture](docs/architecture.md) — module map, the two auth layers, the polling model
 - [Tools](docs/tools.md) — full tool reference
+- [Examples](examples/) — end-to-end deployment walkthroughs (host + OAuth provider)
 
 ## Contributing
 

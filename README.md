@@ -96,7 +96,8 @@ Only `ANTHROPIC_API_KEY` is required for local use. Full reference in
 | `MCP_AUTH_MODE` | Inbound auth for HTTP: `bearer`, `oidc`, `cognito` (comma-separated to combine). |
 | `MCP_BEARER_TOKEN` | Shared token for `bearer` mode. |
 | `MCP_OIDC_ISSUER` / `MCP_OIDC_JWKS_URL` / `MCP_OIDC_AUDIENCE` | JWT verification for `oidc`/`cognito`. |
-| `MCP_ALLOWED_AGENT_IDS` | Optional allowlist of agents `session_start` may launch. |
+| `MCP_ALLOWLIST_AGENTS_ACTIVE` | `true` activates the agent allowlist (default off → all agents allowed). |
+| `MCP_ALLOWED_AGENT_IDS` | Agents `session_start` may launch when the allowlist is active. |
 | `MCP_ALLOW_DESTRUCTIVE` | `false` disables archive/delete. |
 
 ## Authentication

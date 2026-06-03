@@ -95,8 +95,16 @@ fly secrets set --app fib-mcp \
   MCP_OIDC_ISSUER="https://your-slug-staging.authkit.app" \
   MCP_OIDC_JWKS_URL="https://your-slug-staging.authkit.app/oauth2/jwks" \
   MCP_OIDC_AUDIENCE="https://fib-mcp.fly.dev/mcp" \
-  MCP_PUBLIC_URL="https://fib-mcp.fly.dev" \
-  MCP_ALLOWED_AGENT_IDS="agent_01..."     # optional: lock to your agent
+  MCP_PUBLIC_URL="https://fib-mcp.fly.dev"
+```
+
+The agent allowlist is **off by default** (every agent is allowed). To restrict
+this connector to specific agents, set both:
+
+```bash
+fly secrets set --app fib-mcp \
+  MCP_ALLOWLIST_AGENTS_ACTIVE="true" \
+  MCP_ALLOWED_AGENT_IDS="agent_01...,agent_02..."
 ```
 
 (See [`.env.example`](.env.example) for the same set.)

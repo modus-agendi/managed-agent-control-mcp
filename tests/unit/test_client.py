@@ -78,6 +78,20 @@ async def test_delete_returns_marker_on_empty_body():
     assert out == {}
 
 
+async def test_path_ids_are_percent_encoded():
+    # A crafted id must not break out of /v1/sessions/{id} onto another endpoint:
+    # its slashes are percent-encoded, so it stays a single path segment.
+    async with respx.mock(base_url=BASE) as router:
+        route = router.route(method="GET").mock(return_value=httpx.Response(200, json={}))
+        client = ManagedAgentsClient()
+        await client.session_get("sesn_1/../../v1/agents")
+        await client.aclose()
+
+    raw_path = route.calls.last.request.url.raw_path  # bytes actually sent on the wire
+    assert b"%2F" in raw_path
+    assert raw_path.startswith(b"/v1/sessions/sesn_1%2F")
+
+
 async def test_api_error_is_parsed():
     async with respx.mock(base_url=BASE) as router:
         router.get("/v1/agents/agent_x").mock(

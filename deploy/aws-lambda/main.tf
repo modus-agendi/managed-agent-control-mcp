@@ -30,8 +30,11 @@ locals {
 # ---- container registry ------------------------------------------------------
 
 resource "aws_ecr_repository" "this" {
-  name                 = var.name
-  image_tag_mutability = "MUTABLE"
+  name = var.name
+  # IMMUTABLE: a pushed tag can't be overwritten, so the image behind a deployed
+  # tag can't be swapped out from under you. Deploy with a fresh, unique tag each
+  # time (e.g. the git SHA or release version) rather than reusing "latest".
+  image_tag_mutability = "IMMUTABLE"
   force_delete         = true
 
   image_scanning_configuration {
@@ -122,6 +125,10 @@ resource "aws_lambda_function" "this" {
   image_uri     = "${aws_ecr_repository.this.repository_url}:${var.image_tag}"
   memory_size   = var.memory_mb
   timeout       = var.timeout_seconds
+
+  # Cap concurrent executions to bound token burn / abuse blast radius from this
+  # public endpoint. -1 = use the account's unreserved pool (no per-function cap).
+  reserved_concurrent_executions = var.reserved_concurrency
 
   environment {
     # SSM_PARAM_PREFIX drives the cold-start secret loader (app/ssm.py). Merge

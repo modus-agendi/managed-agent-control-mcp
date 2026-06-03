@@ -17,10 +17,24 @@ SDK, this module is the single seam to swap.
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 
 import httpx
 
 from . import config
+
+
+def _seg(value: str) -> str:
+    """Percent-encode one URL path segment.
+
+    Path ids (``agent_id``, ``session_id``, …) originate from the model / MCP
+    client. Encoding them with ``safe=""`` (so ``/``, ``..``, ``?``, ``#`` are
+    escaped too) prevents a crafted id from reshaping the request path or query
+    against the Managed Agents API — which would otherwise run under the
+    operator's key.
+    """
+    return quote(str(value), safe="")
+
 
 # Bound how long a single API call may take. Managed Agents control-plane calls
 # return promptly (we never open the SSE stream from here), so a modest timeout
@@ -94,7 +108,7 @@ class ManagedAgentsClient:
         return await self._request("GET", "/v1/agents", params=_page_params(limit, page, order))
 
     async def agent_get(self, agent_id: str) -> dict[str, Any]:
-        return await self._request("GET", f"/v1/agents/{agent_id}")
+        return await self._request("GET", f"/v1/agents/{_seg(agent_id)}")
 
     # ---- environments (read-only discovery) ----------------------------------
 
@@ -106,7 +120,7 @@ class ManagedAgentsClient:
         )
 
     async def environment_get(self, environment_id: str) -> dict[str, Any]:
-        return await self._request("GET", f"/v1/environments/{environment_id}")
+        return await self._request("GET", f"/v1/environments/{_seg(environment_id)}")
 
     # ---- vaults (read-only discovery) ----------------------------------------
 
@@ -116,7 +130,7 @@ class ManagedAgentsClient:
         return await self._request("GET", "/v1/vaults", params=_page_params(limit, page, order))
 
     async def vault_get(self, vault_id: str) -> dict[str, Any]:
-        return await self._request("GET", f"/v1/vaults/{vault_id}")
+        return await self._request("GET", f"/v1/vaults/{_seg(vault_id)}")
 
     # ---- memory stores (read-only discovery) ---------------------------------
 
@@ -128,7 +142,7 @@ class ManagedAgentsClient:
         )
 
     async def memory_store_get(self, memory_store_id: str) -> dict[str, Any]:
-        return await self._request("GET", f"/v1/memory_stores/{memory_store_id}")
+        return await self._request("GET", f"/v1/memory_stores/{_seg(memory_store_id)}")
 
     # ---- sessions ------------------------------------------------------------
 
@@ -159,7 +173,7 @@ class ManagedAgentsClient:
         return await self._request("POST", "/v1/sessions", json=body)
 
     async def session_get(self, session_id: str) -> dict[str, Any]:
-        return await self._request("GET", f"/v1/sessions/{session_id}")
+        return await self._request("GET", f"/v1/sessions/{_seg(session_id)}")
 
     async def sessions_list(
         self,
@@ -178,16 +192,16 @@ class ManagedAgentsClient:
         return await self._request("GET", "/v1/sessions", params=params)
 
     async def session_archive(self, session_id: str) -> dict[str, Any]:
-        return await self._request("POST", f"/v1/sessions/{session_id}/archive")
+        return await self._request("POST", f"/v1/sessions/{_seg(session_id)}/archive")
 
     async def session_delete(self, session_id: str) -> dict[str, Any]:
-        return await self._request("DELETE", f"/v1/sessions/{session_id}")
+        return await self._request("DELETE", f"/v1/sessions/{_seg(session_id)}")
 
     # ---- events --------------------------------------------------------------
 
     async def events_send(self, session_id: str, events: list[dict[str, Any]]) -> dict[str, Any]:
         return await self._request(
-            "POST", f"/v1/sessions/{session_id}/events", json={"events": events}
+            "POST", f"/v1/sessions/{_seg(session_id)}/events", json={"events": events}
         )
 
     async def events_list(
@@ -207,7 +221,7 @@ class ManagedAgentsClient:
         if since:
             # Incremental polling: only events recorded after this timestamp.
             params["created_at[gt]"] = since
-        return await self._request("GET", f"/v1/sessions/{session_id}/events", params=params)
+        return await self._request("GET", f"/v1/sessions/{_seg(session_id)}/events", params=params)
 
 
 def _page_params(

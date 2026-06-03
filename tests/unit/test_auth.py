@@ -103,3 +103,47 @@ def test_cognito_advertises_facade_paths():
     auth = CognitoAuthenticator(issuer=ISSUER, jwks_url="x", hosted_ui_url="https://ui.example.com")
     assert "/authorize" in auth.public_paths()
     assert auth.advertises_oauth() is True
+
+
+# ---- factory: audience is required for JWT modes (H2) ------------------------
+
+
+def test_factory_oidc_requires_audience(monkeypatch: pytest.MonkeyPatch):
+    from managed_agents_mcp.app.auth.factory import AuthConfigError, build_authenticator
+
+    monkeypatch.setenv("MCP_AUTH_MODE", "oidc")
+    monkeypatch.setenv("MCP_OIDC_ISSUER", ISSUER)
+    monkeypatch.setenv("MCP_OIDC_JWKS_URL", "https://issuer.example.com/jwks")
+    # No MCP_OIDC_AUDIENCE → must refuse (skipping the check accepts any issuer token).
+    with pytest.raises(AuthConfigError):
+        build_authenticator()
+
+
+def test_factory_oidc_audience_requirement_is_opt_out(monkeypatch: pytest.MonkeyPatch):
+    from managed_agents_mcp.app.auth.factory import build_authenticator
+
+    monkeypatch.setenv("MCP_AUTH_MODE", "oidc")
+    monkeypatch.setenv("MCP_OIDC_ISSUER", ISSUER)
+    monkeypatch.setenv("MCP_OIDC_JWKS_URL", "https://issuer.example.com/jwks")
+    monkeypatch.setenv("MCP_OIDC_REQUIRE_AUDIENCE", "false")
+    assert build_authenticator() is not None
+
+
+# ---- network transports fail closed without inbound auth (H1) ----------------
+
+
+def test_network_transport_fails_closed_without_auth(monkeypatch: pytest.MonkeyPatch):
+    from managed_agents_mcp.app.run import _require_inbound_auth
+
+    monkeypatch.delenv("MCP_AUTH_MODE", raising=False)
+    monkeypatch.delenv("MCP_ALLOW_INSECURE_NO_AUTH", raising=False)
+    with pytest.raises(SystemExit):
+        _require_inbound_auth()
+
+
+def test_network_transport_allows_explicit_insecure_opt_out(monkeypatch: pytest.MonkeyPatch):
+    from managed_agents_mcp.app.run import _require_inbound_auth
+
+    monkeypatch.delenv("MCP_AUTH_MODE", raising=False)
+    monkeypatch.setenv("MCP_ALLOW_INSECURE_NO_AUTH", "true")
+    assert _require_inbound_auth() is None

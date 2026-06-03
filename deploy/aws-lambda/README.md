@@ -11,6 +11,13 @@ role, and SSM SecureString placeholders for secrets.
 > your own CDN/domain if you need them. The app supports bearer/OIDC/Cognito auth
 > regardless (configure via `environment_variables` + SSM).
 
+> [!IMPORTANT]
+> The ECR repo uses **immutable tags**: a tag can't be overwritten once pushed,
+> so use a fresh, unique `image_tag` for each release (e.g. the version or git
+> SHA) rather than reusing one. Also set an inbound auth mode — the Function URL
+> is `auth=NONE` and the app refuses to start with no inbound auth unless
+> `MCP_ALLOW_INSECURE_NO_AUTH=true`.
+
 ## Usage
 
 ```hcl
@@ -67,6 +74,7 @@ terraform output function_url
 | `memory_mb` | `512` | Lambda memory. |
 | `timeout_seconds` | `60` | Lambda timeout. |
 | `log_retention_days` | `30` | CloudWatch retention. |
+| `reserved_concurrency` | `5` | Max concurrent executions (caps token burn / abuse from the public URL). `-1` = unreserved pool. |
 | `environment_variables` | `{}` | Non-secret env config (e.g. `MCP_AUTH_MODE`). |
 | `ssm_secret_keys` | `["anthropic-api-key"]` | Secret keys provisioned as SSM placeholders. |
 | `create_function_url` | `true` | Create a public Function URL. |

@@ -5,8 +5,8 @@ on:
     branches: [main]
   pull_request:
 
-# Action versions use major tags here; Dependabot (github-actions ecosystem) keeps
-# them current and can be switched to commit-SHA pins for stricter supply-chain.
+# Actions are pinned to immutable commit SHAs (a moved tag can't swap the action
+# out from under us); the trailing `# vX` comment lets Dependabot keep them current.
 permissions:
   contents: read
 
@@ -19,8 +19,8 @@ jobs:
     name: Lint & type-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
           enable-cache: true
       - run: uv sync --frozen --all-extras
@@ -39,8 +39,8 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v7
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}

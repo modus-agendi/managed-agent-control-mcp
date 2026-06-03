@@ -35,3 +35,4 @@ crash.log
 # Local artifacts
 output/
 .DS_Store
+.playwright-mcp/

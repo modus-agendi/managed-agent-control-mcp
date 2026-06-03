@@ -133,6 +133,14 @@ def test_wrong_audience_rejected(keypair):
         auth.validate(_hdr(_sign(keypair, client_id="someone-else", aud="someone-else")), {})
 
 
+def test_audience_matches_on_aud_even_if_client_id_differs(keypair):
+    # Standard OIDC (WorkOS/Auth0): aud = the resource (e.g. MCP URL); client_id is
+    # the (possibly DCR'd, unpinnable) client. Must accept when aud matches.
+    auth = _authenticator(keypair.public_key())  # audiences=[AUD]
+    token = _sign(keypair, aud=AUD, client_id="connected-app-dynamic-xyz")
+    assert auth.validate(_hdr(token), {}).subject == "user-1"
+
+
 def test_token_use_enforced(keypair):
     auth = _authenticator(keypair.public_key(), require_token_use="access")
     with pytest.raises(AuthError):

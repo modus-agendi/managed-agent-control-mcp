@@ -118,6 +118,18 @@ class ManagedAgentsClient:
     async def vault_get(self, vault_id: str) -> dict[str, Any]:
         return await self._request("GET", f"/v1/vaults/{vault_id}")
 
+    # ---- memory stores (read-only discovery) ---------------------------------
+
+    async def memory_stores_list(
+        self, *, limit: int | None = None, page: str | None = None, order: str | None = None
+    ) -> dict[str, Any]:
+        return await self._request(
+            "GET", "/v1/memory_stores", params=_page_params(limit, page, order)
+        )
+
+    async def memory_store_get(self, memory_store_id: str) -> dict[str, Any]:
+        return await self._request("GET", f"/v1/memory_stores/{memory_store_id}")
+
     # ---- sessions ------------------------------------------------------------
 
     async def session_create(

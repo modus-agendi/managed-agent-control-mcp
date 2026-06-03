@@ -41,6 +41,7 @@ class FakeState:
         self.agents: dict[str, dict] = {}
         self.environments: dict[str, dict] = {}
         self.vaults: dict[str, dict] = {}
+        self.memory_stores: dict[str, dict] = {}
         self.sessions: dict[str, dict] = {}
         self._seq = 0
 
@@ -70,6 +71,16 @@ class FakeState:
             "type": "vault",
             "display_name": "demo-vault",
             "metadata": {"agent_name": "demo"},
+            "created_at": _TS,
+            "updated_at": _TS,
+            "archived_at": None,
+        }
+        self.memory_stores["memstore_demo"] = {
+            "id": "memstore_demo",
+            "type": "memory_store",
+            "name": "demo-memory",
+            "description": "Persistent memory for the demo agent.",
+            "metadata": {},
             "created_at": _TS,
             "updated_at": _TS,
             "archived_at": None,
@@ -179,6 +190,20 @@ def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
         vault = state.vaults.get(vid)
         return JSONResponse(vault) if vault else _err(404, "not_found_error", f"no vault {vid}")
 
+    async def memory_stores_list(request: Request):
+        if e := _require_key(request):
+            return e
+        return JSONResponse(_list_page(list(state.memory_stores.values()), request))
+
+    async def memory_store_get(request: Request):
+        if e := _require_key(request):
+            return e
+        mid = request.path_params["mid"]
+        store = state.memory_stores.get(mid)
+        return (
+            JSONResponse(store) if store else _err(404, "not_found_error", f"no memory store {mid}")
+        )
+
     # ---- sessions ------------------------------------------------------------
 
     async def session_create(request: Request):
@@ -269,6 +294,8 @@ def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
             Route("/v1/environments/{eid}", environment_get, methods=["GET"]),
             Route("/v1/vaults", vaults_list, methods=["GET"]),
             Route("/v1/vaults/{vid}", vault_get, methods=["GET"]),
+            Route("/v1/memory_stores", memory_stores_list, methods=["GET"]),
+            Route("/v1/memory_stores/{mid}", memory_store_get, methods=["GET"]),
             Route("/v1/sessions", session_create, methods=["POST"]),
             Route("/v1/sessions", sessions_list, methods=["GET"]),
             Route("/v1/sessions/{sid}", session_get, methods=["GET"]),

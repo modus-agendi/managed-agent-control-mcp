@@ -43,6 +43,13 @@ async def test_vault_discovery():
     assert one["display_name"] == "demo-vault"
 
 
+async def test_memory_store_discovery():
+    stores = await _call("memory_store_list")
+    assert any(m["id"] == "memstore_demo" for m in stores["memory_stores"])
+    one = await _call("memory_store_get", {"memory_store_id": "memstore_demo"})
+    assert one["name"] == "demo-memory"
+
+
 async def test_session_start_attaches_vaults(fake_state):
     started = await _call(
         "session_start",

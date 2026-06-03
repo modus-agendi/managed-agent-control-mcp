@@ -74,6 +74,7 @@ Once published to PyPI, you can skip the clone: `uvx managed-agent-control-mcp`.
 | Discover | `agent_list` / `agent_get` | Find an agent and inspect its config |
 | | `environment_list` / `environment_get` | Find a sandbox environment |
 | | `vault_list` / `vault_get` | Find a credential vault to attach at `session_start` |
+| | `memory_store_list` / `memory_store_get` | Find a persistent memory store |
 | Start | `session_start` | Create a session and (optionally) send the first instruction |
 | Observe | `session_get` | Status (`idle`/`running`/…) + token usage |
 | | `session_list` | List sessions |

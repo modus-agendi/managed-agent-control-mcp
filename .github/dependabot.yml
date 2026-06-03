@@ -12,6 +12,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
 
   - package-ecosystem: docker
     directories:
@@ -19,3 +22,6 @@ updates:
       - /deploy/aws-lambda
     schedule:
       interval: weekly
+    groups:
+      docker:
+        patterns: ["*"]

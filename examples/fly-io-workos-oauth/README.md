@@ -41,21 +41,43 @@ URL in the next step, so decide it now.
 
 ## Step 1 — Set up WorkOS AuthKit
 
-1. Sign up at [workos.com](https://workos.com) and open the **Dashboard**.
-2. **Authentication → AuthKit**: note your **AuthKit domain**, e.g.
-   `https://your-project-12345.authkit.app`. This is your OAuth issuer.
-3. **Connect → Configuration**:
-   - Enable **Dynamic Client Registration (DCR)** (and **Client ID Metadata
-     Document** if offered) — this lets Claude.ai register itself, so you leave
-     the connector's Client ID/Secret blank.
-   - Add a **Resource Indicator** equal to your MCP endpoint URL:
-     `https://fib-mcp.fly.dev/mcp`. WorkOS will stamp issued tokens with
-     `aud = https://fib-mcp.fly.dev/mcp`, which your server checks.
-4. (Recommended) Restrict who can sign in (AuthKit → invite-only, or limit to your
-   email/domain) so only you can mint tokens for your server.
+Create a free [WorkOS](https://workos.com) account and open the **Dashboard**.
+Select the environment you'll use (e.g. **Staging**, shown top-left). Then:
 
-You now have two values: the **issuer** (`…​.authkit.app`) and its **JWKS**
-(`…​.authkit.app/oauth2/jwks`).
+1. **Get your AuthKit domain (the OAuth issuer).** Left nav → **Domains** (under
+   *Developer*) → the **AuthKit** card. Staging gets a default domain like
+   `https://your-slug-staging.authkit.app` (custom domains are production-only).
+   Confirm the exact issuer + JWKS by reading its published metadata:
+
+   ```bash
+   curl -s https://your-slug-staging.authkit.app/.well-known/oauth-authorization-server \
+     | jq '{issuer, jwks_uri}'
+   # → issuer:   https://your-slug-staging.authkit.app
+   #   jwks_uri: https://your-slug-staging.authkit.app/oauth2/jwks
+   ```
+
+   These become `MCP_OIDC_ISSUER` and `MCP_OIDC_JWKS_URL`.
+
+2. **Enable MCP auth.** Left nav → **Connect** → **Configuration** → the
+   **MCP Auth** card → **Enable**. This turns on **Dynamic Client Registration**
+   and **Client ID Metadata Document** (both *Disabled* by default), so Claude.ai
+   registers itself — which is why the connector's Client ID/Secret stay blank.
+
+3. **Add your MCP resource indicator.** Same page → **MCP resource indicators** →
+   **Edit MCP resources** → add `https://fib-mcp.fly.dev/mcp`. WorkOS then stamps
+   issued tokens with `aud = https://fib-mcp.fly.dev/mcp`, which your server
+   validates (→ `MCP_OIDC_AUDIENCE`).
+
+4. (Recommended) **Lock down sign-in.** Left nav → **Authentication** →
+   **Methods** — disable methods you don't want and restrict sign-ups for a
+   single-owner setup. Belt-and-suspenders: set
+   `MCP_OIDC_ALLOWED_PRINCIPALS=you@example.com` on the server so only your
+   identity is accepted even if someone else obtains a token.
+
+> [!NOTE]
+> You do **not** need the WorkOS `client_id` / API key for this flow — those are
+> for WorkOS's own server-side SDKs. With DCR, Claude.ai brings its own client,
+> and your server only validates the JWT (issuer + JWKS + audience).
 
 ## Step 2 — Create the Fly app (don't deploy yet)
 
@@ -70,8 +92,8 @@ fly apps create fib-mcp        # reserves the name + URL
 fly secrets set --app fib-mcp \
   ANTHROPIC_API_KEY="sk-ant-..." \
   MCP_AUTH_MODE="oidc" \
-  MCP_OIDC_ISSUER="https://your-project-12345.authkit.app" \
-  MCP_OIDC_JWKS_URL="https://your-project-12345.authkit.app/oauth2/jwks" \
+  MCP_OIDC_ISSUER="https://your-slug-staging.authkit.app" \
+  MCP_OIDC_JWKS_URL="https://your-slug-staging.authkit.app/oauth2/jwks" \
   MCP_OIDC_AUDIENCE="https://fib-mcp.fly.dev/mcp" \
   MCP_PUBLIC_URL="https://fib-mcp.fly.dev" \
   MCP_ALLOWED_AGENT_IDS="agent_01..."     # optional: lock to your agent

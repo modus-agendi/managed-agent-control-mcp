@@ -33,8 +33,10 @@ or your platform's HTTPS) before exposing it. Set `MCP_PUBLIC_URL` if a proxy or
 custom domain fronts it so OAuth discovery advertises the right URL.
 
 > [!WARNING]
-> Always set `MCP_AUTH_MODE` for HTTP. Without it the server runs with no inbound
-> auth and prints a warning — fine for `localhost`, never for a public address.
+> Set `MCP_AUTH_MODE` for HTTP. Without it the server **refuses to start** (no
+> inbound auth means anyone who reaches it can drive your key). To run without
+> auth anyway — `localhost` / trusted private networks only — set
+> `MCP_ALLOW_INSECURE_NO_AUTH=true`.
 
 ## AWS Lambda
 

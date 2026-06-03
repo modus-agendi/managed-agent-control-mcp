@@ -20,12 +20,14 @@ setup. `MCP_AUTH_MODE` is a comma-separated list — modes coexist.
 
 | Variable | Used by | Description |
 |---|---|---|
-| `MCP_AUTH_MODE` | all | `bearer`, `oidc`, `cognito` (e.g. `oidc,bearer`). Unset = no auth. |
+| `MCP_AUTH_MODE` | all | `bearer`, `oidc`, `cognito` (e.g. `oidc,bearer`). Unset → a network transport (HTTP/Lambda) **refuses to start** (see `MCP_ALLOW_INSECURE_NO_AUTH`). |
+| `MCP_ALLOW_INSECURE_NO_AUTH` | HTTP/Lambda | `true` lets the server run with **no inbound auth** when `MCP_AUTH_MODE` is unset. Only for localhost / trusted private networks — otherwise anyone who can reach it drives your key. |
 | `MCP_BEARER_TOKEN` | bearer | Shared static token. |
 | `MCP_OIDC_ISSUER` | oidc, cognito | Token issuer (`iss`). |
 | `MCP_OIDC_JWKS_URL` | oidc, cognito | JWKS endpoint for signature verification. |
-| `MCP_OIDC_AUDIENCE` | oidc, cognito | Accepted audience(s) / client id(s), comma-separated. |
-| `MCP_OIDC_ALLOWED_PRINCIPALS` | oidc, cognito | Optional allow-list of `sub`/`email`/`username`. |
+| `MCP_OIDC_AUDIENCE` | oidc, cognito | Accepted audience(s) / client id(s), comma-separated. **Required** by default (see `MCP_OIDC_REQUIRE_AUDIENCE`). |
+| `MCP_OIDC_REQUIRE_AUDIENCE` | oidc, cognito | Default `true`: refuse to start without `MCP_OIDC_AUDIENCE`. Set `false` to skip the audience check (accepts any token from the issuer — **not recommended**). |
+| `MCP_OIDC_ALLOWED_PRINCIPALS` | oidc, cognito | Optional allow-list of `sub`/`email`/`username`. Without it, anyone the issuer authenticates is allowed (matters if your IdP permits open sign-up). |
 | `MCP_OIDC_REQUIRE_TOKEN_USE` | oidc | Require a `token_use` claim value (e.g. `access`). |
 | `MCP_COGNITO_HOSTED_UI` | cognito | Cognito hosted-UI base URL (for the OAuth facade). |
 | `MCP_PUBLIC_URL` | oidc, cognito | Public base URL to advertise in OAuth discovery when a proxy/CDN/custom domain fronts the server. |

@@ -32,6 +32,12 @@ variable "log_retention_days" {
   default     = 30
 }
 
+variable "reserved_concurrency" {
+  description = "Max concurrent Lambda executions, capping token burn / abuse blast radius from the public Function URL. Set to -1 to use the account's unreserved pool (no per-function cap)."
+  type        = number
+  default     = 5
+}
+
 variable "environment_variables" {
   description = "Non-secret config set as Lambda env vars (e.g. MCP_AUTH_MODE, MCP_OIDC_ISSUER, MCP_ALLOWED_AGENT_IDS). Secrets should go in SSM (see ssm_secret_keys), not here."
   type        = map(string)

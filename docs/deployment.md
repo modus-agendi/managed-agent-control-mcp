@@ -67,6 +67,20 @@ The MCP endpoint is `<function_url>mcp`. See the module's
 [README](../deploy/aws-lambda/README.md) for inputs and the CloudFront/custom-domain
 note.
 
+## Hardening notes
+
+- **No built-in rate limiting.** Authentication gates *who* can call the server, but
+  any authenticated caller (or a leaked token) can create sessions and burn tokens
+  without an application-level cap. Front the HTTP/Lambda endpoint with a reverse
+  proxy / API gateway / WAF rate limit, and rotate inbound credentials if you suspect
+  abuse. On Lambda, `reserved_concurrency` (default 5) bounds the concurrent blast
+  radius; container/VPS deploys have no equivalent unless you add one.
+- **Bound and detect.** The optional guardrails (`MCP_ALLOWLIST_AGENTS_ACTIVE` +
+  `MCP_ALLOWED_AGENT_IDS`, `MCP_ALLOWED_ENVIRONMENT_IDS`, `MCP_ALLOW_DESTRUCTIVE`)
+  limit what a caller can do, and every session-affecting tool emits a one-line
+  `"audit"` JSON record to **stderr** — alarm on its volume to catch a leaked
+  credential spawning agents.
+
 ## Releasing (PyPI + GHCR)
 
 Tagging a SemVer release runs `.github/workflows/release.yml`, which publishes to

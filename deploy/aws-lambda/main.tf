@@ -91,11 +91,15 @@ data "aws_iam_policy_document" "lambda" {
     resources = [local.ssm_arn_glob]
   }
 
-  # SecureString decrypt via the default SSM KMS key, scoped to SSM usage only.
+  # SecureString decrypt via the SSM KMS key. Scoped to this account+region's KMS
+  # keys (not every key everywhere) and, via the condition, to SSM usage only — so
+  # this role can never be used to decrypt unrelated data with a cross-account key.
   statement {
-    sid       = "DecryptSecrets"
-    actions   = ["kms:Decrypt"]
-    resources = ["*"]
+    sid     = "DecryptSecrets"
+    actions = ["kms:Decrypt"]
+    resources = [
+      "arn:aws:kms:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:key/*"
+    ]
     condition {
       test     = "StringEquals"
       variable = "kms:ViaService"

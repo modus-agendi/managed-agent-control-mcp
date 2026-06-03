@@ -9,17 +9,19 @@
 #     managed-agent-control-mcp
 
 # syntax=docker/dockerfile:1
-ARG PYTHON_VERSION=3.13
 
+# Base image pinned by immutable digest (not just the mutable tag) so a moved or
+# compromised tag can't swap the base out from under a build. Dependabot bumps the
+# tag + digest together; both stages stay on the same pinned image.
 # ---- build the wheel ---------------------------------------------------------
-FROM python:${PYTHON_VERSION}-slim AS build
+FROM python:3.13-slim@sha256:b04b5d7233d2ad9c379e22ea8927cd1378cd15c60d4ef876c065b25ea8fb3bf3 AS build
 WORKDIR /src
 COPY pyproject.toml README.md LICENSE ./
 COPY src ./src
 RUN pip install --no-cache-dir build && python -m build --wheel --outdir /dist
 
 # ---- runtime -----------------------------------------------------------------
-FROM python:${PYTHON_VERSION}-slim
+FROM python:3.13-slim@sha256:b04b5d7233d2ad9c379e22ea8927cd1378cd15c60d4ef876c065b25ea8fb3bf3
 RUN useradd --create-home --uid 10001 app
 COPY --from=build /dist/*.whl /tmp/
 RUN pip install --no-cache-dir /tmp/*.whl && rm -f /tmp/*.whl

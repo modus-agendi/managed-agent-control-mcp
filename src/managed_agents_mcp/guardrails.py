@@ -15,7 +15,7 @@ Operators who expose this server to less-trusted callers can switch them on:
                                  (enforced whenever set)
     MCP_ALLOW_DESTRUCTIVE        "false" makes session_archive/session_delete refuse
 
-Every tool also emits a one-line JSON audit record to stdout (never secrets), so
+Every tool also emits a one-line JSON audit record to stderr (never secrets), so
 the operator can monitor session creation / spend and alarm on anomalies.
 """
 
@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from functools import lru_cache
 
 
@@ -90,12 +91,14 @@ def check_destructive_allowed(action: str) -> None:
 
 
 def audit(event: str, **fields: object) -> None:
-    """Emit a structured audit line to stdout — metadata only, never secrets.
+    """Emit a structured audit line to stderr — metadata only, never secrets.
 
-    A log metric filter on ``"audit"`` can alarm on session-creation volume, so a
-    leaked inbound credential that starts spawning agents is detectable.
+    Goes to stderr (not stdout) so it never interleaves with the MCP JSON-RPC
+    protocol stream on stdio transports; HTTP/Lambda send both streams to the log
+    aggregator. A log metric filter on ``"audit"`` can alarm on session-creation
+    volume, so a leaked inbound credential that starts spawning agents is detectable.
     """
-    print(json.dumps({"audit": event, **fields}), flush=True)
+    print(json.dumps({"audit": event, **fields}), file=sys.stderr, flush=True)
 
 
 def reset_cache() -> None:

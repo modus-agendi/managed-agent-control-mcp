@@ -20,11 +20,41 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5
 
-  # Secret scanning: the gitleaks GitHub Action requires a paid license for
-  # organization-owned repos, so it is not run in CI here. Secrets are kept out
-  # of the repo via `.gitleaks.toml` + a local pre-commit hook, and GitHub's
-  # native secret scanning / push protection can be enabled in repo settings.
-  # When the repo is public, gitleaks-action is free and can be re-added.
-  #
+  pip-audit:
+    name: pip-audit (dependency CVEs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+        with:
+          enable-cache: true
+      - name: Install the locked dependency set
+        run: uv sync --frozen --all-extras
+      - name: Audit installed packages against the advisory DB
+        run: uv run --with pip-audit pip-audit
+
+  gitleaks:
+    name: Secret scan (gitleaks CLI)
+    runs-on: ubuntu-latest
+    # The gitleaks *Action* needs a (free but mandatory) license for org-owned repos,
+    # public or not. The gitleaks *binary* is MIT-licensed, so we run the pinned CLI
+    # directly (checksum-verified). This backstops GitHub's native secret scanning +
+    # push protection and the local pre-commit hook, using this repo's .gitleaks.toml.
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+      GITLEAKS_SHA256: "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0 # full history so the scan covers every commit, not just the tip
+      - name: Install gitleaks (pinned + checksum-verified)
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o gitleaks.tar.gz
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+      - name: Scan history for secrets
+        run: ./gitleaks git . --config .gitleaks.toml --redact --no-banner
+
   # Static security analysis (bandit's checks) runs in CI via Ruff's "S"
-  # (flake8-bandit) ruleset — see [tool.ruff.lint] in pyproject.toml.
+  # (flake8-bandit) ruleset — see [tool.ruff.lint] in pyproject.toml. Deeper SAST
+  # runs in .github/workflows/codeql.yml (CodeQL, security-extended).

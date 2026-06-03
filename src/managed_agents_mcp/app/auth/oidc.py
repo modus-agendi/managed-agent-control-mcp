@@ -65,9 +65,11 @@ class OIDCAuthenticator(Authenticator):
                 signing_key.key,
                 algorithms=self._algorithms,
                 issuer=self._issuer,
+                # require exp: reject tokens with no expiry (PyJWT only *checks* exp
+                # when present, so without this a non-expiring token would be accepted).
                 # Audience is checked manually below: access tokens carry it in
                 # `client_id` (Cognito) rather than `aud`.
-                options={"verify_aud": False},
+                options={"require": ["exp"], "verify_aud": False},
             )
         except jwt.ExpiredSignatureError as e:
             raise AuthError(f"jwt expired: {e}") from e

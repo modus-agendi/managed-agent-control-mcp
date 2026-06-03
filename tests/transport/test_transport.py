@@ -28,6 +28,8 @@ EXPECTED_TOOLS = {
     "agent_get",
     "environment_list",
     "environment_get",
+    "vault_list",
+    "vault_get",
     "session_start",
     "session_get",
     "session_list",

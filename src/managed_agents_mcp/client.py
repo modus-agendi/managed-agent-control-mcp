@@ -108,6 +108,16 @@ class ManagedAgentsClient:
     async def environment_get(self, environment_id: str) -> dict[str, Any]:
         return await self._request("GET", f"/v1/environments/{environment_id}")
 
+    # ---- vaults (read-only discovery) ----------------------------------------
+
+    async def vaults_list(
+        self, *, limit: int | None = None, page: str | None = None, order: str | None = None
+    ) -> dict[str, Any]:
+        return await self._request("GET", "/v1/vaults", params=_page_params(limit, page, order))
+
+    async def vault_get(self, vault_id: str) -> dict[str, Any]:
+        return await self._request("GET", f"/v1/vaults/{vault_id}")
+
     # ---- sessions ------------------------------------------------------------
 
     async def session_create(

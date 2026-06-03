@@ -40,6 +40,7 @@ class FakeState:
     def __init__(self) -> None:
         self.agents: dict[str, dict] = {}
         self.environments: dict[str, dict] = {}
+        self.vaults: dict[str, dict] = {}
         self.sessions: dict[str, dict] = {}
         self._seq = 0
 
@@ -62,6 +63,15 @@ class FakeState:
             "name": "demo-sandbox",
             "config": {"type": "cloud", "networking": {"type": "unrestricted"}},
             "created_at": _TS,
+            "archived_at": None,
+        }
+        self.vaults["vlt_demo"] = {
+            "id": "vlt_demo",
+            "type": "vault",
+            "display_name": "demo-vault",
+            "metadata": {"agent_name": "demo"},
+            "created_at": _TS,
+            "updated_at": _TS,
             "archived_at": None,
         }
 
@@ -157,6 +167,18 @@ def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
         env = state.environments.get(eid)
         return JSONResponse(env) if env else _err(404, "not_found_error", f"no environment {eid}")
 
+    async def vaults_list(request: Request):
+        if e := _require_key(request):
+            return e
+        return JSONResponse(_list_page(list(state.vaults.values()), request))
+
+    async def vault_get(request: Request):
+        if e := _require_key(request):
+            return e
+        vid = request.path_params["vid"]
+        vault = state.vaults.get(vid)
+        return JSONResponse(vault) if vault else _err(404, "not_found_error", f"no vault {vid}")
+
     # ---- sessions ------------------------------------------------------------
 
     async def session_create(request: Request):
@@ -245,6 +267,8 @@ def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
             Route("/v1/agents/{aid}", agent_get, methods=["GET"]),
             Route("/v1/environments", environments_list, methods=["GET"]),
             Route("/v1/environments/{eid}", environment_get, methods=["GET"]),
+            Route("/v1/vaults", vaults_list, methods=["GET"]),
+            Route("/v1/vaults/{vid}", vault_get, methods=["GET"]),
             Route("/v1/sessions", session_create, methods=["POST"]),
             Route("/v1/sessions", sessions_list, methods=["GET"]),
             Route("/v1/sessions/{sid}", session_get, methods=["GET"]),

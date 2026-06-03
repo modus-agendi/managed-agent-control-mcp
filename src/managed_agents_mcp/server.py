@@ -3,7 +3,8 @@
 Tool tiers (see each tool's docstring — those are written as activation prompts
 for the model, not human docs):
 
-  discover   agent_list, agent_get, environment_list, environment_get
+  discover   agent_list, agent_get, environment_list, environment_get,
+             vault_list, vault_get
   start      session_start
   observe    session_get, session_list, session_events   (poll; no live stream)
   interact   session_message, session_interrupt, session_respond
@@ -30,9 +31,11 @@ Control Claude Managed Agents: start an agent, watch it work, and steer it.
 
 Typical loop:
 1. Discover — agent_list / environment_list to find an agent_* id and an env_* id
-   (or use ones the user gives you).
-2. Start — session_start(agent_id, environment_id, message=...) creates a session and
-   sends the first instruction; it returns a session_id.
+   (or use ones the user gives you). If the agent uses MCP tools that need stored
+   credentials, also vault_list to find its vlt_* vault.
+2. Start — session_start(agent_id, environment_id, message=..., vault_ids=[…]) creates
+   a session and sends the first instruction; it returns a session_id. Attach
+   vault_ids for any agent whose MCP servers require auth, or they fail to connect.
 3. Observe (POLL — there is no live stream) — call session_get(session_id) for status
    and session_events(session_id, since=...) for new output. A turn is done when status
    is "idle". Reuse the returned next_since as the `since` argument to fetch only newer
@@ -104,6 +107,29 @@ async def environment_list(limit: int | None = None, page: str | None = None) ->
 async def environment_get(environment_id: str) -> dict:
     """Get one environment's full configuration by `env_*` id (packages, networking)."""
     return _truncate(await _client().environment_get(environment_id))
+
+
+@mcp.tool()
+async def vault_list(limit: int | None = None, page: str | None = None) -> dict:
+    """List credential vaults (lightweight summaries).
+
+    An agent whose tools/MCP servers need stored credentials must have a `vlt_*`
+    vault attached when you start its session (`session_start(..., vault_ids=[…])`),
+    or those MCP servers fail to authenticate. Call this to find the right vault —
+    the `display_name`/`metadata` usually identify which agent it belongs to.
+    """
+    data = await _client().vaults_list(limit=limit, page=page)
+    return _list_envelope(data, _summarize_vault, "vaults")
+
+
+@mcp.tool()
+async def vault_get(vault_id: str) -> dict:
+    """Get one vault's details by `vlt_*` id (display name, metadata, timestamps).
+
+    Secret values are never returned — Anthropic stores and injects them. This is
+    metadata only, to confirm the vault is the one you want before attaching it.
+    """
+    return _truncate(await _client().vault_get(vault_id))
 
 
 # ---- start tier --------------------------------------------------------------
@@ -350,6 +376,16 @@ def _summarize_environment(e: dict) -> dict:
         "name": e.get("name"),
         "created_at": e.get("created_at"),
         "archived_at": e.get("archived_at"),
+    }
+
+
+def _summarize_vault(v: dict) -> dict:
+    return {
+        "id": v.get("id"),
+        "display_name": v.get("display_name"),
+        "metadata": v.get("metadata"),
+        "created_at": v.get("created_at"),
+        "archived_at": v.get("archived_at"),
     }
 
 

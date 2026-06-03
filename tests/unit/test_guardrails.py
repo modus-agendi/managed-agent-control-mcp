@@ -43,8 +43,11 @@ def test_destructive_can_be_disabled(monkeypatch: pytest.MonkeyPatch):
         guardrails.check_destructive_allowed("session_archive")
 
 
-def test_audit_emits_json(capsys: pytest.CaptureFixture[str]):
+def test_audit_emits_json_to_stderr(capsys: pytest.CaptureFixture[str]):
     guardrails.audit("session_start", session_id="sesn_1")
-    line = capsys.readouterr().out.strip()
+    captured = capsys.readouterr()
+    # Audit goes to stderr so it never corrupts the stdio MCP protocol stream.
+    assert captured.out == ""
+    line = captured.err.strip()
     assert '"audit": "session_start"' in line
     assert '"session_id": "sesn_1"' in line

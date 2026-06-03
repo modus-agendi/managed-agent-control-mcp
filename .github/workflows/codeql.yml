@@ -1,0 +1,32 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "27 3 * * 1" # weekly (Mon 03:27 UTC), catches advisories in unchanged code
+
+# Actions are pinned to immutable commit SHAs (the trailing `# vX` lets Dependabot
+# keep them current), matching the rest of the workflows.
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (python)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # upload results to the Security tab (code scanning)
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: github/codeql-action/init@d77b13a0df3134d64a457ea9003f600b09fa1c8a # v3
+        with:
+          languages: python
+          # security-extended adds the broader security query suite on top of the default.
+          queries: security-extended
+      - uses: github/codeql-action/analyze@d77b13a0df3134d64a457ea9003f600b09fa1c8a # v3
+        with:
+          category: "/language:python"

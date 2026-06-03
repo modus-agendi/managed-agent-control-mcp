@@ -129,6 +129,30 @@ def test_factory_oidc_audience_requirement_is_opt_out(monkeypatch: pytest.Monkey
     assert build_authenticator() is not None
 
 
+# ---- factory: issuer / JWKS must be https (L2) -------------------------------
+
+
+def test_factory_oidc_rejects_http_jwks(monkeypatch: pytest.MonkeyPatch):
+    from managed_agents_mcp.app.auth.factory import AuthConfigError, build_authenticator
+
+    monkeypatch.setenv("MCP_AUTH_MODE", "oidc")
+    monkeypatch.setenv("MCP_OIDC_ISSUER", ISSUER)
+    monkeypatch.setenv("MCP_OIDC_JWKS_URL", "http://issuer.example.com/jwks")  # plain http
+    monkeypatch.setenv("MCP_OIDC_AUDIENCE", "client-1")
+    with pytest.raises(AuthConfigError):
+        build_authenticator()
+
+
+def test_factory_oidc_allows_http_for_localhost(monkeypatch: pytest.MonkeyPatch):
+    from managed_agents_mcp.app.auth.factory import build_authenticator
+
+    monkeypatch.setenv("MCP_AUTH_MODE", "oidc")
+    monkeypatch.setenv("MCP_OIDC_ISSUER", "http://localhost:8080")
+    monkeypatch.setenv("MCP_OIDC_JWKS_URL", "http://localhost:8080/jwks")
+    monkeypatch.setenv("MCP_OIDC_AUDIENCE", "client-1")
+    assert build_authenticator() is not None
+
+
 # ---- network transports fail closed without inbound auth (H1) ----------------
 
 

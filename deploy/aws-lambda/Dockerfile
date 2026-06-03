@@ -6,8 +6,10 @@
 #   docker push <ecr-url>:<tag>
 # then: terraform apply -var image_tag=<tag>
 
-ARG PYTHON_VERSION=3.13
-FROM public.ecr.aws/lambda/python:${PYTHON_VERSION}
+# Base image pinned by immutable digest (not just the mutable tag) so a moved or
+# compromised tag can't swap the base out from under a build. Dependabot bumps the
+# tag + digest together.
+FROM public.ecr.aws/lambda/python:3.13@sha256:c1454ec7a9804db34e079acab0470a326604d4dfad6c39a05eea3ba5daf07298
 
 # Copy the project source, then install it (+ lambda extra) into the task root.
 COPY pyproject.toml README.md LICENSE /build/

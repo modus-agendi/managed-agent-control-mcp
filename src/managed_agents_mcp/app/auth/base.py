@@ -14,6 +14,7 @@ bypassing the public OAuth-discovery paths.
 from __future__ import annotations
 
 import os
+import sys
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
@@ -130,8 +131,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
             principal = self._auth.validate(dict(request.headers), dict(request.query_params))
         except AuthError as e:
             client = request.client.host if request.client else "?"
-            # Stdout → log aggregator. "auth:" prefix is a stable hook for alarms.
-            print(f"auth: {e} (client={client} path={request.url.path})", flush=True)
+            # Stderr → log aggregator. "auth:" prefix is a stable hook for alarms.
+            print(
+                f"auth: {e} (client={client} path={request.url.path})", file=sys.stderr, flush=True
+            )
             headers = {"WWW-Authenticate": _www_authenticate(request, self._auth)}
             return JSONResponse({"error": "unauthorized"}, status_code=401, headers=headers)
         request.state.principal = principal

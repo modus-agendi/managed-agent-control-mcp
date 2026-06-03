@@ -17,6 +17,7 @@ MCP_ALLOW_INSECURE_NO_AUTH=true.
 from __future__ import annotations
 
 import os
+from urllib.parse import urlparse
 
 from .base import Authenticator, CompositeAuthenticator
 from .bearer import StaticBearerAuthenticator
@@ -37,6 +38,28 @@ def _require(name: str) -> str:
     if not value:
         raise AuthConfigError(f"{name} is required for the selected MCP_AUTH_MODE")
     return value
+
+
+_LOCALHOST_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+
+
+def _require_https(name: str) -> str:
+    """Like ``_require``, but reject non-HTTPS URLs (http allowed only for localhost).
+
+    The JWKS URL is fetched to obtain the token-signing keys, and the issuer is the
+    discovery trust anchor — over plain http a network attacker could swap the keys
+    and forge accepted tokens. So both must be https in production; an http URL is
+    tolerated only for a localhost IdP in local dev.
+    """
+    value = _require(name)
+    parsed = urlparse(value)
+    if parsed.scheme == "https":
+        return value
+    if parsed.scheme == "http" and (parsed.hostname or "").lower() in _LOCALHOST_HOSTS:
+        return value
+    raise AuthConfigError(
+        f"{name} must use https (got {value!r}); http is allowed only for localhost."
+    )
 
 
 def _bool_env(name: str, *, default: bool) -> bool:
@@ -70,17 +93,17 @@ def _build_one(mode: str) -> Authenticator:
         return StaticBearerAuthenticator(_require("MCP_BEARER_TOKEN"))
     if mode == "oidc":
         return OIDCAuthenticator(
-            issuer=_require("MCP_OIDC_ISSUER"),
-            jwks_url=_require("MCP_OIDC_JWKS_URL"),
+            issuer=_require_https("MCP_OIDC_ISSUER"),
+            jwks_url=_require_https("MCP_OIDC_JWKS_URL"),
             audiences=_audiences(),
             allowed_principals=_csv("MCP_OIDC_ALLOWED_PRINCIPALS"),
             require_token_use=os.environ.get("MCP_OIDC_REQUIRE_TOKEN_USE") or None,
         )
     if mode == "cognito":
         return CognitoAuthenticator(
-            issuer=_require("MCP_OIDC_ISSUER"),
-            jwks_url=_require("MCP_OIDC_JWKS_URL"),
-            hosted_ui_url=_require("MCP_COGNITO_HOSTED_UI"),
+            issuer=_require_https("MCP_OIDC_ISSUER"),
+            jwks_url=_require_https("MCP_OIDC_JWKS_URL"),
+            hosted_ui_url=_require_https("MCP_COGNITO_HOSTED_UI"),
             audiences=_audiences(),
             allowed_principals=_csv("MCP_OIDC_ALLOWED_PRINCIPALS"),
         )

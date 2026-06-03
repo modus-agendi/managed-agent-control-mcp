@@ -121,6 +121,18 @@ def test_expired_rejected(keypair):
         auth.validate(_hdr(_sign(keypair, exp=int(time.time()) - 10)), {})
 
 
+def test_missing_exp_rejected(keypair):
+    # No exp claim at all: a non-expiring token must be rejected (require exp).
+    auth = _authenticator(keypair.public_key())
+    token = jwt.encode(
+        {"iss": ISSUER, "aud": AUD, "client_id": AUD, "sub": "user-1"},
+        keypair,
+        algorithm="RS256",
+    )
+    with pytest.raises(AuthError):
+        auth.validate(_hdr(token), {})
+
+
 def test_wrong_issuer_rejected(keypair):
     auth = _authenticator(keypair.public_key())
     with pytest.raises(AuthError):

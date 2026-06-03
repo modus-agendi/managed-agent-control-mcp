@@ -4,7 +4,7 @@ Tool tiers (see each tool's docstring — those are written as activation prompt
 for the model, not human docs):
 
   discover   agent_list, agent_get, environment_list, environment_get,
-             vault_list, vault_get
+             vault_list, vault_get, memory_store_list, memory_store_get
   start      session_start
   observe    session_get, session_list, session_events   (poll; no live stream)
   interact   session_message, session_interrupt, session_respond
@@ -130,6 +130,24 @@ async def vault_get(vault_id: str) -> dict:
     metadata only, to confirm the vault is the one you want before attaching it.
     """
     return _truncate(await _client().vault_get(vault_id))
+
+
+@mcp.tool()
+async def memory_store_list(limit: int | None = None, page: str | None = None) -> dict:
+    """List memory stores (lightweight summaries: id, name, description).
+
+    Memory stores are `memstore_*` collections of text the agent mounts as a
+    directory for persistent, cross-session memory. Use this to find one (the
+    `name`/`description` identify its purpose). Page via the returned `next_page`.
+    """
+    data = await _client().memory_stores_list(limit=limit, page=page)
+    return _list_envelope(data, _summarize_memory_store, "memory_stores")
+
+
+@mcp.tool()
+async def memory_store_get(memory_store_id: str) -> dict:
+    """Get one memory store's details by `memstore_*` id (name, description, timestamps)."""
+    return _truncate(await _client().memory_store_get(memory_store_id))
 
 
 # ---- start tier --------------------------------------------------------------
@@ -386,6 +404,16 @@ def _summarize_vault(v: dict) -> dict:
         "metadata": v.get("metadata"),
         "created_at": v.get("created_at"),
         "archived_at": v.get("archived_at"),
+    }
+
+
+def _summarize_memory_store(m: dict) -> dict:
+    return {
+        "id": m.get("id"),
+        "name": m.get("name"),
+        "description": m.get("description"),
+        "created_at": m.get("created_at"),
+        "archived_at": m.get("archived_at"),
     }
 
 

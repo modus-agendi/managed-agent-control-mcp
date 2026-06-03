@@ -30,6 +30,14 @@ MCP servers need stored credentials. Page via the returned `next_page` token.
 ### `vault_get(vault_id)`
 One vault's metadata by `vlt_*` id. Secret values are never returned.
 
+### `memory_store_list(limit?, page?)`
+List memory stores as summaries (`id`, `name`, `description`, timestamps). A
+`memstore_*` store is a persistent, cross-session text collection the agent mounts
+as a directory. Page via the returned `next_page` token.
+
+### `memory_store_get(memory_store_id)`
+One memory store's details by `memstore_*` id (name, description, timestamps).
+
 ## Start
 
 ### `session_start(agent_id, environment_id, message?, vault_ids?, agent_version?)`

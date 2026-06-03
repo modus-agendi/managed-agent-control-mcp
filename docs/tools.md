@@ -40,6 +40,14 @@ One memory store's details by `memstore_*` id (name, description, timestamps).
 
 ## Start
 
+> **Match resources to the agent first.** A managed agent only works correctly with
+> *its own* environment, vault(s), and memory store(s). Before `session_start`,
+> `agent_get` the agent, then pick the resources that belong to it by matching each
+> resource's `name` / `description` / `metadata` (resources are commonly tagged
+> `metadata.agent_name=<agent>` or named `<agent>-vault` / `<agent>-memory`). Starting
+> bare or with mismatched resources causes failed tool auth, lost memory, and bad
+> outcomes. The tool descriptions enforce this so MCP clients (e.g. Claude.ai) do it.
+
 ### `session_start(agent_id, environment_id, message?, vault_ids?, memory_store_ids?, agent_version?)`
 Create a session (provision the sandbox) and, if `message` is given, send it as
 the first `user.message`. `agent_version` pins a version (default: latest).

@@ -1,0 +1,216 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "Skip to main content" [ref=e5] [cursor=pointer]:
+        - /url: "#main-_R_6bqmcnmlb_"
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - heading "Main" [level=1] [ref=e8]
+          - button "Show suggestions" [ref=e13] [cursor=pointer]:
+            - generic [ref=e14]: Staging
+            - generic [ref=e15]:
+              - img [ref=e16]
+              - generic [ref=e18]: Staging
+            - img [ref=e19]
+        - generic [ref=e21]:
+          - button "Search ⌘K" [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+            - text: Search
+            - generic [ref=e25]: ⌘K
+          - generic [ref=e26]:
+            - button "Help" [ref=e27] [cursor=pointer]:
+              - img [ref=e28]
+              - text: Help & Feedback
+            - link "Docs" [ref=e30] [cursor=pointer]:
+              - /url: https://workos.com/docs
+              - generic [ref=e31]:
+                - img [ref=e32]
+                - text: Docs
+          - generic [ref=e34]:
+            - button [ref=e35] [cursor=pointer]:
+              - img [ref=e36]
+            - button "Your profile" [ref=e38] [cursor=pointer]:
+              - generic [ref=e40]: A
+      - navigation "app" [ref=e41]:
+        - generic [ref=e42]:
+          - link "Overview" [ref=e46] [cursor=pointer]:
+            - /url: /get-started
+            - img [ref=e47]
+          - button [ref=e55] [cursor=pointer]:
+            - img [ref=e57]
+        - generic [ref=e60]:
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - link "Overview" [ref=e67] [cursor=pointer]:
+                - /url: /get-started
+                - generic [ref=e68]:
+                  - img [ref=e70]
+                  - generic [ref=e72]: Overview
+              - link "Organizations" [ref=e73] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/organizations
+                - generic [ref=e74]:
+                  - img [ref=e76]
+                  - generic [ref=e78]: Organizations
+              - link "Users" [ref=e79] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/users
+                - generic [ref=e80]:
+                  - img [ref=e82]
+                  - generic [ref=e84]: Users
+              - link "Applications" [ref=e85] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/applications
+                - generic [ref=e86]:
+                  - img [ref=e88]
+                  - generic [ref=e90]: Applications
+            - generic [ref=e92]: Products
+            - generic [ref=e94]:
+              - link "Authentication" [ref=e95] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication
+                - generic [ref=e96]:
+                  - img [ref=e98]
+                  - generic [ref=e100]: Authentication
+              - link "Authorization" [ref=e101] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authorization
+                - generic [ref=e102]:
+                  - img [ref=e104]
+                  - generic [ref=e106]: Authorization
+              - link "Radar" [ref=e107] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/radar
+                - generic [ref=e108]:
+                  - img [ref=e110]
+                  - generic [ref=e112]: Radar
+              - link "Audit Logs" [ref=e113] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/audit-logs
+                - generic [ref=e114]:
+                  - img [ref=e116]
+                  - generic [ref=e118]: Audit Logs
+              - link "Feature Flags" [ref=e119] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/flags
+                - generic [ref=e120]:
+                  - img [ref=e122]
+                  - generic [ref=e125]: Feature Flags
+              - link "Pipes" [ref=e126] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/pipes
+                - generic [ref=e127]:
+                  - img [ref=e129]
+                  - generic [ref=e131]: Pipes
+              - link "Connect" [ref=e132] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/connect
+                - generic [ref=e133]:
+                  - img [ref=e135]
+                  - generic [ref=e137]: Connect
+              - link "Vault" [ref=e138] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/vault
+                - generic [ref=e139]:
+                  - img [ref=e141]
+                  - generic [ref=e143]: Vault
+            - generic [ref=e145]: Developer
+            - generic [ref=e147]:
+              - link "Domains" [ref=e148] [cursor=pointer]:
+                - /url: /domains
+                - generic [ref=e149]:
+                  - img [ref=e151]
+                  - generic [ref=e153]: Domains
+              - link "Redirects" [ref=e154] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/redirects
+                - generic [ref=e155]:
+                  - img [ref=e157]
+                  - generic [ref=e159]: Redirects
+              - link "API Keys" [ref=e160] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/api-keys
+                - generic [ref=e161]:
+                  - img [ref=e163]
+                  - generic [ref=e165]: API Keys
+              - link "IdP Attributes" [ref=e166] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/identity-provider-attributes
+                - generic [ref=e167]:
+                  - img [ref=e169]
+                  - generic [ref=e171]: IdP Attributes
+              - link "Branding" [ref=e172] [cursor=pointer]:
+                - /url: /branding
+                - generic [ref=e173]:
+                  - img [ref=e175]
+                  - generic [ref=e177]: Branding
+              - link "Emails" [ref=e178] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/emails/events
+                - generic [ref=e179]:
+                  - img [ref=e181]
+                  - generic [ref=e183]: Emails
+              - link "Events" [ref=e184] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/events
+                - generic [ref=e185]:
+                  - img [ref=e187]
+                  - generic [ref=e189]: Events
+              - link "Actions" [ref=e190] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/actions/logs
+                - generic [ref=e191]:
+                  - img [ref=e193]
+                  - generic [ref=e195]: Actions
+              - link "Webhooks" [ref=e196] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/webhooks
+                - generic [ref=e197]:
+                  - img [ref=e199]
+                  - generic [ref=e201]: Webhooks
+              - link "Test SSO" [ref=e202] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/test-sso
+                - generic [ref=e203]:
+                  - img [ref=e205]
+                  - generic [ref=e207]: Test SSO
+          - generic [ref=e209]:
+            - link "Notifications" [ref=e210] [cursor=pointer]:
+              - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/notifications
+              - generic [ref=e211]:
+                - img [ref=e213]
+                - generic [ref=e216]: Notifications
+            - link "Settings" [ref=e217] [cursor=pointer]:
+              - /url: /settings/team
+              - generic [ref=e218]:
+                - img [ref=e220]
+                - generic [ref=e222]: Settings
+      - main [ref=e225]:
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - generic [ref=e228]:
+              - heading "Applications" [level=2] [ref=e229]
+              - generic [ref=e230]: Manage multiple products that share the same set of users and organizations.
+            - button "Create application" [ref=e232] [cursor=pointer]
+          - generic [ref=e234]:
+            - generic [ref=e237]:
+              - generic [ref=e239]:
+                - textbox "Search" [ref=e240]
+                - img [ref=e242]
+              - button "Created" [ref=e245] [cursor=pointer]:
+                - generic [ref=e246]:
+                  - img [ref=e247]
+                  - text: Created
+            - table [ref=e254]:
+              - rowgroup [ref=e255]:
+                - row "Name Client ID Created" [ref=e256]:
+                  - columnheader "Name" [ref=e257]:
+                    - button "Name" [ref=e259] [cursor=pointer]:
+                      - generic [ref=e260]: Name
+                  - columnheader "Client ID" [ref=e261]
+                  - columnheader "Created" [ref=e262]:
+                    - button "Created" [ref=e264] [cursor=pointer]:
+                      - generic [ref=e265]: Created
+                  - columnheader [ref=e266]
+              - rowgroup [ref=e267]:
+                - row "gmail.com's Application Default client_01KT6DG8CZ8QB4XPQJT3K0YA71 Jun 3, 2026 View application details" [ref=e268] [cursor=pointer]:
+                  - cell "gmail.com's Application Default" [ref=e269]:
+                    - generic [ref=e272]:
+                      - generic [ref=e273]: gmail.com's Application
+                      - generic [ref=e275]: Default
+                  - cell "client_01KT6DG8CZ8QB4XPQJT3K0YA71" [ref=e276]:
+                    - button "client_01KT6DG8CZ8QB4XPQJT3K0YA71" [ref=e278]:
+                      - code [ref=e279]: client_01KT6DG8CZ8QB4XPQJT3K0YA71
+                  - cell "Jun 3, 2026" [ref=e280]:
+                    - generic [ref=e281]: Jun 3, 2026
+                  - cell "View application details" [ref=e282]:
+                    - generic [ref=e283]:
+                      - img [ref=e284]
+                      - link "View application details" [ref=e287]:
+                        - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/applications/app_01KT6DG8MY243QYYY0ERSG0T7T
+    - region "Notifications (F8)":
+      - list
+    - region "Notifications (F8)":
+      - list
+  - alert [ref=e288]

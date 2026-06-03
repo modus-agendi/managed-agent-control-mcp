@@ -1,0 +1,292 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "Skip to main content" [ref=e5] [cursor=pointer]:
+        - /url: "#main-_R_6bqmcnmlb_"
+      - banner [ref=e6]:
+        - generic [ref=e7]:
+          - heading "Main" [level=1] [ref=e8]
+          - button "Show suggestions" [ref=e13] [cursor=pointer]:
+            - generic [ref=e14]: Staging
+            - generic [ref=e15]:
+              - img [ref=e16]
+              - generic [ref=e18]: Staging
+            - img [ref=e19]
+        - generic [ref=e21]:
+          - button "Search ⌘K" [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+            - text: Search
+            - generic [ref=e25]: ⌘K
+          - generic [ref=e26]:
+            - button "Help" [ref=e27] [cursor=pointer]:
+              - img [ref=e28]
+              - text: Help & Feedback
+            - link "Docs" [ref=e30] [cursor=pointer]:
+              - /url: https://workos.com/docs
+              - generic [ref=e31]:
+                - img [ref=e32]
+                - text: Docs
+          - generic [ref=e34]:
+            - button [ref=e35] [cursor=pointer]:
+              - img [ref=e36]
+            - button "Your profile" [ref=e38] [cursor=pointer]:
+              - generic [ref=e40]: A
+      - navigation "app" [ref=e41]:
+        - generic [ref=e42]:
+          - link "Overview" [ref=e46] [cursor=pointer]:
+            - /url: /get-started
+            - img [ref=e47]
+          - button [ref=e55] [cursor=pointer]:
+            - img [ref=e57]
+        - generic [ref=e60]:
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - link "Overview" [ref=e67] [cursor=pointer]:
+                - /url: /get-started
+                - generic [ref=e68]:
+                  - img [ref=e70]
+                  - generic [ref=e72]: Overview
+              - link "Organizations" [ref=e73] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/organizations
+                - generic [ref=e74]:
+                  - img [ref=e76]
+                  - generic [ref=e78]: Organizations
+              - link "Users" [ref=e79] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/users
+                - generic [ref=e80]:
+                  - img [ref=e82]
+                  - generic [ref=e84]: Users
+              - link "Applications New" [ref=e85] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/applications
+                - generic [ref=e86]:
+                  - img [ref=e88]
+                  - generic [ref=e90]:
+                    - text: Applications
+                    - generic [ref=e91]: New
+            - generic [ref=e93]: Products
+            - generic [ref=e95]:
+              - link "Authentication" [ref=e96] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication
+                - generic [ref=e97]:
+                  - img [ref=e99]
+                  - generic [ref=e101]: Authentication
+              - link "Authorization" [ref=e102] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authorization
+                - generic [ref=e103]:
+                  - img [ref=e105]
+                  - generic [ref=e107]: Authorization
+              - link "Radar" [ref=e108] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/radar
+                - generic [ref=e109]:
+                  - img [ref=e111]
+                  - generic [ref=e113]: Radar
+              - link "Audit Logs" [ref=e114] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/audit-logs
+                - generic [ref=e115]:
+                  - img [ref=e117]
+                  - generic [ref=e119]: Audit Logs
+              - link "Feature Flags" [ref=e120] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/flags
+                - generic [ref=e121]:
+                  - img [ref=e123]
+                  - generic [ref=e126]: Feature Flags
+              - link "Pipes" [ref=e127] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/pipes
+                - generic [ref=e128]:
+                  - img [ref=e130]
+                  - generic [ref=e132]: Pipes
+              - link "Connect" [ref=e133] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/connect
+                - generic [ref=e134]:
+                  - img [ref=e136]
+                  - generic [ref=e138]: Connect
+              - link "Vault" [ref=e139] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/vault
+                - generic [ref=e140]:
+                  - img [ref=e142]
+                  - generic [ref=e144]: Vault
+            - generic [ref=e146]: Developer
+            - generic [ref=e148]:
+              - link "Domains" [ref=e149] [cursor=pointer]:
+                - /url: /domains
+                - generic [ref=e150]:
+                  - img [ref=e152]
+                  - generic [ref=e154]: Domains
+              - link "Redirects" [ref=e155] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/redirects
+                - generic [ref=e156]:
+                  - img [ref=e158]
+                  - generic [ref=e160]: Redirects
+              - link "API Keys" [ref=e161] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/api-keys
+                - generic [ref=e162]:
+                  - img [ref=e164]
+                  - generic [ref=e166]: API Keys
+              - link "IdP Attributes" [ref=e167] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/identity-provider-attributes
+                - generic [ref=e168]:
+                  - img [ref=e170]
+                  - generic [ref=e172]: IdP Attributes
+              - link "Branding" [ref=e173] [cursor=pointer]:
+                - /url: /branding
+                - generic [ref=e174]:
+                  - img [ref=e176]
+                  - generic [ref=e178]: Branding
+              - link "Emails" [ref=e179] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/emails/events
+                - generic [ref=e180]:
+                  - img [ref=e182]
+                  - generic [ref=e184]: Emails
+              - link "Events" [ref=e185] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/events
+                - generic [ref=e186]:
+                  - img [ref=e188]
+                  - generic [ref=e190]: Events
+              - link "Actions" [ref=e191] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/actions/logs
+                - generic [ref=e192]:
+                  - img [ref=e194]
+                  - generic [ref=e196]: Actions
+              - link "Webhooks" [ref=e197] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/webhooks
+                - generic [ref=e198]:
+                  - img [ref=e200]
+                  - generic [ref=e202]: Webhooks
+              - link "Test SSO" [ref=e203] [cursor=pointer]:
+                - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/test-sso
+                - generic [ref=e204]:
+                  - img [ref=e206]
+                  - generic [ref=e208]: Test SSO
+          - generic [ref=e211]:
+            - link "Notifications" [ref=e212] [cursor=pointer]:
+              - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/notifications
+              - generic [ref=e213]:
+                - img [ref=e215]
+                - generic [ref=e218]: Notifications
+            - link "Settings" [ref=e219] [cursor=pointer]:
+              - /url: /settings/team
+              - generic [ref=e220]:
+                - img [ref=e222]
+                - generic [ref=e224]: Settings
+      - navigation "Authentication" [ref=e225]:
+        - generic [ref=e228]:
+          - heading "Authentication" [level=2] [ref=e230]
+          - generic [ref=e231]:
+            - list [ref=e233]:
+              - listitem [ref=e234]:
+                - link "Analytics" [ref=e235] [cursor=pointer]:
+                  - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication/analytics
+                  - generic [ref=e237]: Analytics
+              - listitem [ref=e238]:
+                - link "Methods" [ref=e239] [cursor=pointer]:
+                  - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication/methods
+                  - generic [ref=e241]: Methods
+              - listitem [ref=e242]:
+                - link "Providers" [ref=e243] [cursor=pointer]:
+                  - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication/oauth-providers
+                  - generic [ref=e245]: Providers
+              - listitem [ref=e246]:
+                - link "Features" [ref=e247] [cursor=pointer]:
+                  - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication/features
+                  - generic [ref=e249]: Features
+              - listitem [ref=e250]:
+                - link "Add-ons" [ref=e251] [cursor=pointer]:
+                  - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authentication/integrations
+                  - generic [ref=e253]: Add-ons
+            - generic [ref=e254]:
+              - heading "Related" [level=3] [ref=e256]
+              - list [ref=e257]:
+                - listitem [ref=e258]:
+                  - link "Authorization" [ref=e259] [cursor=pointer]:
+                    - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/authorization
+                    - generic [ref=e260]:
+                      - generic [ref=e261]: Authorization
+                      - img [ref=e262]
+                - listitem [ref=e264]:
+                  - link "Branding" [ref=e265] [cursor=pointer]:
+                    - /url: /branding
+                    - generic [ref=e266]:
+                      - generic [ref=e267]: Branding
+                      - img [ref=e268]
+                - listitem [ref=e270]:
+                  - link "Domains" [ref=e271] [cursor=pointer]:
+                    - /url: /domains
+                    - generic [ref=e272]:
+                      - generic [ref=e273]: Domains
+                      - img [ref=e274]
+                - listitem [ref=e276]:
+                  - link "Redirects" [ref=e277] [cursor=pointer]:
+                    - /url: /environment_01KT6DG7ZGTB1VYDMTQ8Z89D4Z/redirects
+                    - generic [ref=e278]:
+                      - generic [ref=e279]: Redirects
+                      - img [ref=e280]
+      - main [ref=e284]:
+        - generic [ref=e285]:
+          - heading "Methods" [level=2] [ref=e288]
+          - generic [ref=e289]:
+            - article [ref=e290]:
+              - generic [ref=e291]:
+                - generic [ref=e293]:
+                  - heading "Single Sign-On" [level=3] [ref=e294]
+                  - paragraph [ref=e295]: Allow users to sign in with SAML and OIDC identity providers like Entra ID, Okta, and Google Workspace.
+                - generic [ref=e298]:
+                  - button "Manage" [ref=e299] [cursor=pointer]
+                  - generic [ref=e301]:
+                    - generic [ref=e303]:
+                      - generic:
+                        - img
+                    - generic [ref=e304]: Redirect URI is missing
+            - article [ref=e305]:
+              - generic [ref=e306]:
+                - generic [ref=e308]:
+                  - heading "Email + Password" [level=3] [ref=e309]
+                  - paragraph [ref=e310]: Allow users to sign in with email and password.
+                - generic [ref=e312]:
+                  - generic [ref=e314]:
+                    - generic:
+                      - img
+                  - generic [ref=e315]: Enabled
+                - generic [ref=e316]:
+                  - generic [ref=e317]:
+                    - generic [ref=e318]:
+                      - term [ref=e319]: ‍ Min. password length
+                      - definition [ref=e320]: ‍ 10 characters
+                    - generic [ref=e321]:
+                      - term [ref=e322]: ‍ Min. password complexity
+                      - definition [ref=e323]:
+                        - text: ‍
+                        - generic [ref=e324]: "3"
+                        - generic [ref=e326] [cursor=pointer]: Safely unguessable
+                    - generic [ref=e327]:
+                      - term [ref=e328]: ‍ Password rules
+                      - definition [ref=e329]: ‍ None
+                    - generic [ref=e330]:
+                      - term [ref=e331]: ‍ Compromised passwords
+                      - definition [ref=e332]: ‍ Don’t reject breached passwords
+                    - generic [ref=e333]:
+                      - term [ref=e334]: ‍ Password history
+                      - definition [ref=e335]: ‍ Don’t reject previously used passwords
+                  - button "Manage" [ref=e337] [cursor=pointer]
+            - article [ref=e338]:
+              - generic [ref=e339]:
+                - generic [ref=e341]:
+                  - heading "Passkeys" [level=3] [ref=e342]
+                  - paragraph [ref=e343]: Allow users to sign in with a passkey. Passkeys are faster, easier, and more secure than passwords.
+                - generic [ref=e345]:
+                  - img [ref=e346]
+                  - generic [ref=e348]: Disabled
+                - button "Enable" [ref=e351] [cursor=pointer]
+            - article [ref=e352]:
+              - generic [ref=e353]:
+                - generic [ref=e355]:
+                  - heading "Magic Auth" [level=3] [ref=e356]
+                  - paragraph [ref=e357]: Allow users to sign in with a unique six-digit code sent to their email address.
+                - generic [ref=e359]:
+                  - img [ref=e360]
+                  - generic [ref=e362]: Disabled
+                - button "Enable" [ref=e365] [cursor=pointer]
+    - region "Notifications (F8)":
+      - list
+    - region "Notifications (F8)":
+      - list
+  - alert [ref=e366]

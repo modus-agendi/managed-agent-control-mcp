@@ -1,0 +1,31 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - img "Logo" [ref=e7]
+        - heading "Sign in to WorkOS" [level=1] [ref=e8]
+      - generic [ref=e9]:
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - generic [ref=e13]:
+              - generic [ref=e15]: Email
+              - textbox "Email" [active] [ref=e17]:
+                - /placeholder: Your email address
+            - button "Continue" [ref=e18] [cursor=pointer]:
+              - generic [ref=e19]: Continue
+          - generic [ref=e20]: OR
+          - link "Continue with Google" [ref=e23] [cursor=pointer]:
+            - /url: api/login?provider=GoogleOAuth&state=eyJub25jZSI6IlBQcCtQYytpRWhxRXU1M3huWTlscjRQb0tSWk1EekFhZjZyTEFHdFBFU1U9IiwicmVkaXJlY3QiOiIvZW52aXJvbm1lbnRfMDFLVDZERzdaR1RCMVZZRE1UUThaODlENFovYXV0aGVudGljYXRpb24vbWV0aG9kcyJ9&redirect_uri=https%3A%2F%2Fapi.workos.com%2Fx%2Fauth%2Fauthkit%2Fcallback&client_id=project_01DG5TGK363GRVXP3ZS40WNGEZ&source=signin&authorization_session_id=01KT6FMS9GFPGSCQ74T5FFBCCP
+            - img [ref=e24]
+            - generic [ref=e30]: Continue with Google
+        - paragraph [ref=e31]:
+          - text: Don't have an account?
+          - link "Get started" [ref=e32] [cursor=pointer]:
+            - /url: /sign-up?state=eyJub25jZSI6IlBQcCtQYytpRWhxRXU1M3huWTlscjRQb0tSWk1EekFhZjZyTEFHdFBFU1U9IiwicmVkaXJlY3QiOiIvZW52aXJvbm1lbnRfMDFLVDZERzdaR1RCMVZZRE1UUThaODlENFovYXV0aGVudGljYXRpb24vbWV0aG9kcyJ9&redirect_uri=https%3A%2F%2Fapi.workos.com%2Fx%2Fauth%2Fauthkit%2Fcallback&authorization_session_id=01KT6FMS9GFPGSCQ74T5FFBCCP
+    - generic [ref=e33]:
+      - link "Terms of Service" [ref=e34] [cursor=pointer]:
+        - /url: https://workos.com/legal/terms-of-service
+      - text: and
+      - link "Privacy Policy" [ref=e35] [cursor=pointer]:
+        - /url: https://workos.com/legal/privacy
+  - alert [ref=e36]

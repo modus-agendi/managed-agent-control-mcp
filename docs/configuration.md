@@ -44,8 +44,9 @@ do with your key. All **off by default** (unset = no restriction).
 
 | Variable | Description |
 |---|---|
-| `MCP_ALLOWED_AGENT_IDS` | Comma-separated `agent_*` ids that `session_start` may launch. Others are rejected. |
-| `MCP_ALLOWED_ENVIRONMENT_IDS` | Comma-separated `env_*` ids sessions may use. |
+| `MCP_ALLOWLIST_AGENTS_ACTIVE` | `true` activates the agent allowlist. **Default off → every agent is allowed**, and `MCP_ALLOWED_AGENT_IDS` is ignored. |
+| `MCP_ALLOWED_AGENT_IDS` | Comma-separated `agent_*` ids `session_start` may launch — **only when the allowlist is active**. Others are then rejected. |
+| `MCP_ALLOWED_ENVIRONMENT_IDS` | Comma-separated `env_*` ids sessions may use (enforced whenever set). |
 | `MCP_ALLOW_DESTRUCTIVE` | `false` makes `session_archive` and `session_delete` refuse. |
 
 Every tool call also emits a structured JSON audit line to stdout (tool,

@@ -18,7 +18,7 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.repository.visibility == 'public'
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/dependency-review-action@v5
 
   # Secret scanning: the gitleaks GitHub Action requires a paid license for
   # organization-owned repos, so it is not run in CI here. Secrets are kept out

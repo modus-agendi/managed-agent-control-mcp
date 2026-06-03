@@ -92,12 +92,27 @@ class OIDCAuthenticator(Authenticator):
             )
 
     def _check_audience(self, decoded: dict) -> None:
+        """Accept the token if its `aud` OR `client_id` is allow-listed.
+
+        Standard OIDC providers (WorkOS, Auth0, …) put the real audience in `aud`
+        (the resource the token is for — e.g. your MCP URL). Some access tokens
+        (notably Cognito) instead carry the app's id in `client_id`. We accept a
+        match on either, so a single `MCP_OIDC_AUDIENCE` works across providers —
+        and works with dynamically-registered (DCR) clients, whose `client_id`
+        can't be pinned ahead of time.
+        """
         if not self._audiences:
             return
-        claim = decoded.get("client_id") or decoded.get("aud")
-        claims = claim if isinstance(claim, list) else [claim]
-        if not any(c in self._audiences for c in claims):
-            raise AuthError(f"jwt audience {claim!r} not in {self._audiences}")
+        candidates: list[str] = []
+        aud = decoded.get("aud")
+        if isinstance(aud, list):
+            candidates += [str(a) for a in aud]
+        elif aud:
+            candidates.append(str(aud))
+        if client_id := decoded.get("client_id"):
+            candidates.append(str(client_id))
+        if not any(c in self._audiences for c in candidates):
+            raise AuthError(f"jwt audience {candidates} not in {self._audiences}")
 
     def _check_allowed(self, decoded: dict) -> None:
         if not self._allowed:

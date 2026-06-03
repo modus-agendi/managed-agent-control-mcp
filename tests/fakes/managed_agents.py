@@ -56,12 +56,15 @@ class FakeState:
             "model": "claude-opus-4-7",
             "system": "You are a demo agent. " * 50,  # big-ish to prove get != list
             "description": "An agent for tests.",
+            "metadata": {"agent_name": "demo"},
             "created_at": _TS,
             "archived_at": None,
         }
         self.environments["env_demo"] = {
             "id": "env_demo",
             "name": "demo-sandbox",
+            "description": "Demo sandbox environment.",
+            "metadata": {"team": "demo"},
             "config": {"type": "cloud", "networking": {"type": "unrestricted"}},
             "created_at": _TS,
             "archived_at": None,
@@ -217,6 +220,7 @@ def build_fake(seed: bool = True) -> tuple[Starlette, FakeState]:
             "agent": body.get("agent"),
             "environment_id": body.get("environment_id"),
             "vault_ids": body.get("vault_ids", []),
+            "resources": body.get("resources", []),
             "usage": {"input_tokens": 0, "output_tokens": 0},
             "events": [],
             "stop_reason": None,

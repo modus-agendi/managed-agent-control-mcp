@@ -139,6 +139,7 @@ class ManagedAgentsClient:
         *,
         agent_version: int | None = None,
         vault_ids: list[str] | None = None,
+        memory_store_ids: list[str] | None = None,
     ) -> dict[str, Any]:
         # Bare string → latest agent version; object form pins a specific version.
         agent: Any = (
@@ -149,6 +150,12 @@ class ManagedAgentsClient:
         body: dict[str, Any] = {"agent": agent, "environment_id": environment_id}
         if vault_ids:
             body["vault_ids"] = vault_ids
+        if memory_store_ids:
+            # Memory stores attach through the `resources` array (the API fills in
+            # name/description/mount_path from the store itself).
+            body["resources"] = [
+                {"type": "memory_store", "memory_store_id": m} for m in memory_store_ids
+            ]
         return await self._request("POST", "/v1/sessions", json=body)
 
     async def session_get(self, session_id: str) -> dict[str, Any]:

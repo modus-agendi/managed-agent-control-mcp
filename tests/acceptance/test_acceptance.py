@@ -32,22 +32,33 @@ async def _call(name: str, args: dict | None = None) -> dict:
 async def test_discovery_lists_seeded_resources():
     agents = await _call("agent_list")
     envs = await _call("environment_list")
-    assert any(a["id"] == "agent_demo" for a in agents["agents"])
-    assert any(e["id"] == "env_demo" for e in envs["environments"])
+    agent = next(a for a in agents["agents"] if a["id"] == "agent_demo")
+    env = next(e for e in envs["environments"] if e["id"] == "env_demo")
+    # List summaries must carry title/description/metadata (not just ids).
+    assert agent["description"] == "An agent for tests."
+    assert agent["metadata"] == {"agent_name": "demo"}
+    assert env["name"] == "demo-sandbox"
+    assert env["description"] == "Demo sandbox environment."
+    assert env["metadata"] == {"team": "demo"}
 
 
 async def test_vault_discovery():
     vaults = await _call("vault_list")
-    assert any(v["id"] == "vlt_demo" for v in vaults["vaults"])
+    vault = next(v for v in vaults["vaults"] if v["id"] == "vlt_demo")
+    assert vault["display_name"] == "demo-vault"
+    assert vault["metadata"] == {"agent_name": "demo"}
     one = await _call("vault_get", {"vault_id": "vlt_demo"})
-    assert one["display_name"] == "demo-vault"
+    assert one["display_name"] == "demo-vault" and one["metadata"] == {"agent_name": "demo"}
 
 
 async def test_memory_store_discovery():
     stores = await _call("memory_store_list")
-    assert any(m["id"] == "memstore_demo" for m in stores["memory_stores"])
+    store = next(m for m in stores["memory_stores"] if m["id"] == "memstore_demo")
+    assert store["name"] == "demo-memory"
+    assert store["description"] == "Persistent memory for the demo agent."
+    assert "metadata" in store
     one = await _call("memory_store_get", {"memory_store_id": "memstore_demo"})
-    assert one["name"] == "demo-memory"
+    assert one["name"] == "demo-memory" and one["description"]
 
 
 async def test_session_start_attaches_vaults(fake_state):
@@ -61,6 +72,19 @@ async def test_session_start_attaches_vaults(fake_state):
         },
     )
     assert fake_state.sessions[started["session_id"]]["vault_ids"] == ["vlt_demo"]
+
+
+async def test_session_start_attaches_memory_stores(fake_state):
+    started = await _call(
+        "session_start",
+        {
+            "agent_id": "agent_demo",
+            "environment_id": "env_demo",
+            "memory_store_ids": ["memstore_demo"],
+        },
+    )
+    resources = fake_state.sessions[started["session_id"]]["resources"]
+    assert resources == [{"type": "memory_store", "memory_store_id": "memstore_demo"}]
 
 
 async def test_full_loop_start_observe_interact_end():
